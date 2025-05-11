@@ -154,6 +154,49 @@ function autoGenerateQuote(quranChapters, quranVerses) {
   isGenerating = true;
 }
 
+function getChapterPages(chapter, pagesInfo) {
+  function getStartPage() {
+    for (let ind in pagesInfo) {
+      let prePage = pagesInfo[ind - 1];
+      let page = pagesInfo[ind];
+
+      if (chapter > 114 || chapter < 1) return "no chapter";
+      if (chapter >= 112) return 604;
+
+      if (page.start.chapter === chapter) {
+        if (page.start.verse === 1) {
+          return page.page;
+        } else {
+          return prePage.page;
+        }
+      } else if (
+        page.start.chapter > chapter &&
+        prePage.start.chapter < chapter
+      ) {
+        return prePage.page;
+      }
+    }
+  }
+  let startNum = getStartPage();
+  function getEndPage() {
+    // console.log(start, pagesInfo.length);
+    if (chapter > 114 || chapter < 1) return "no chapter";
+    if (chapter >= 112) {
+      return 604;
+    }
+    for (let ind = startNum; ind < pagesInfo.length; ind++) {
+      let page = pagesInfo[ind];
+
+      if (page.end.chapter !== chapter) {
+        return pagesInfo[ind - 1].page;
+      }
+    }
+  }
+  let endNum = getEndPage();
+  startNum = startNum - 1;
+  return { startNum, endNum };
+}
+
 quran
   .then((arr) => {
     let quranVerses = arr[0];
@@ -175,24 +218,100 @@ quran
     return { quran: arr[0], quranInfo: arr[1] };
   })
   .then((obj) => {
+    let quranVerses = obj.quran;
+    let pagesInfo = obj.quranInfo.pages.references;
     let chapters = document.querySelectorAll(".sowar .soura");
-    console.log(obj.quranInfo.pages)
+
+    console.log(obj.quranInfo);
+    console.log(obj.quran);
+
     chapters.forEach((ele) => {
-      ele.addEventListener("click", (e) => {
-        let chapterNum = ele.dataset.number;
-        for (let aya of getChapter(chapterNum)) {
-          console.log(aya.text);
+      ele.addEventListener("click", () => {
+        let chapterNum = parseInt(ele.dataset.number);
+
+        // getChapter(quranVerses, pagesInfo, ele,obj);
+        let range = getChapterPages(chapterNum, pagesInfo);
+        let urls = [];
+        for (let i = range.startNum; i < range.endNum; i++) {
+          urls.push(
+            `https://cdn.jsdelivr.net/gh/fawazahmed0/quran-api@1/editions/ara-quranwarsh/pages/${
+              i + 1
+            }.json`
+          );
         }
+        async function* waitLoad(urls) {
+          for (const url of urls) {
+            const data = await fetch(url).then((res) => res.json());
+            yield data;
+          }
+        }
+        (async () => {
+          for await (const jsonData of waitLoad(urls)) {
+            console.log("✅ Loaded:", jsonData);
+          }
+        })();
       });
     });
-    
-    function getChapter(chapterNum) {
-       let sora = obj.quran.filter((aya) => {
-          let chapter = aya.chapter;
-          if (chapter == chapterNum) {
-            return aya;
-          }
-        });
-        return sora;
-    }
   });
+
+function getChapter(quranVerses, pagesInfo, ele, obj) {
+  let chapterNum = parseInt(ele.dataset.number);
+  let versesLength = obj.quranInfo.chapters[chapterNum - 1].verses.length;
+  let range = getChapterPages(chapterNum, pagesInfo);
+  let chapter = quranVerses.filter((v) => v.chapter === chapterNum);
+  console.log("what i get from father", versesLength);
+
+  let currentPageIndex = 0;
+  let arr = [];
+  function getPageStartEnd() {
+    if (range.startNum === range.endNum) {
+      for (let i = 0; i < chapter.length; i++) {
+        if (chapter[i].chapter === chapterNum) {
+          console.log(chapter[i].text);
+          if (i + 1 == chapter.length) {
+            console.log("#####", range.startNum, "#####");
+          }
+        }
+      }
+    } else {
+      arr = pagesInfo.slice(range.startNum, range.endNum).map((page) => {
+        let obj = {
+          pageNumber: page.page,
+          start: page.start.verse,
+          end: page.end.verse,
+        };
+        if (page.end.verse != versesLength) console.log("nooooooooooo");
+        return obj;
+      });
+    }
+  }
+  getPageStartEnd();
+  // for (let i = 0; i < chapter.length; i++) {
+  //   if (currentPageIndex >= arr.length) break;
+  //   console.log(chapter[i]);
+  //   let verseNumber = i + 1;
+  //   if (verseNumber == arr[currentPageIndex].end) {
+  //     console.log("#####", arr[currentPageIndex].pageNumber, "#####");
+  //     currentPageIndex++;
+  //   }
+  //   if (verseNumber === undefined) {
+  //     console.log("#kjh####", arr[currentPageIndex].page, "#####");
+  //   }
+  // }
+  console.log(arr);
+  arr.forEach((page) => {
+    // let end = false;
+    chapter.forEach((verse, ind) => {
+      console.log("versee", verse.verse, "page", page.start);
+      if (verse.verse === page.end) {
+        console.log("#####", page.pageNumber, "######");
+      }
+      // if (ind === chapter.length - 1 ) {
+      //   end = true;
+      // }
+    });
+    // if (end) {
+    //   console.log("what array gave",arr[arr.length - 1].end)
+    // }
+  });
+}
