@@ -1,0 +1,431 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+html {
+  scroll-behavior: smooth;
+}
+body {
+  background-image: url(../images/background.jpg);
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-size: cover;
+}
+.overlay {
+  width: 100%;
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  background-color: rgba(37, 36, 36, 0.42);
+  z-index: -9999;
+}
+input,
+button {
+  border: none;
+  outline: none;
+}
+ul,
+li {
+  list-style: none;
+}
+a {
+  text-decoration: none;
+}
+/* Default for Desktop (>= 1200px) */
+.container {
+  width: 100%;
+  max-width: 1200px; /* Max width for larger screens */
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* Small Desktop / Laptops (1024px to 1200px) */
+@media (1024px <= width < 1200px) {
+  .container {
+    max-width: 1000px;
+    padding: 0 15px;
+  }
+}
+
+/* Tablets (768px to 1024px) */
+@media (768px <= width < 1024px) {
+  .container {
+    max-width: 90%; /* Responsive percentage width */
+    padding: 0 10px;
+  }
+}
+
+/* Mobile (480px to 768px) */
+@media (480px <= width < 768px) {
+  .container {
+    max-width: 95%;
+    padding: 0 8px;
+  }
+}
+
+/* Extra Small Mobile (< 480px) */
+@media (width < 480px) {
+  .container {
+    max-width: 100%;
+    padding: 0 5px;
+  }
+}
+
+nav {
+  width: 100%;
+  background-color: #013832;
+  position: fixed;
+  top: 0;
+  z-index: 9999;
+}
+nav .container {
+  height: 60px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+nav .container .menu {
+  cursor: pointer;
+}
+
+.hero-section {
+  backdrop-filter: blur(2px);
+  background-color: rgba(255, 255, 255, 0.07);
+  box-shadow: 0 6px 26px #00000026;
+  margin-top: 60px;
+  transition: .3s;
+}
+.hero-section.sticky {
+  position: fixed;
+  top: 0px;
+  width: 100%;
+  z-index: 999;
+}
+
+.hero-section .container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: 15px;
+}
+.hero-section.sticky .container {
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  gap: 12px;
+  justify-content: center;
+  padding: 10px 0;
+}
+
+.hero-section .container h1 {
+  color: white;
+}
+.hero-section.sticky .container h1 {
+  display: none;
+}
+.hero-section .container .input-group input[type="search"] {
+  height: 38px;
+  width: 496px;
+  border-radius: 44px;
+  padding: 10px 15px;
+  margin-top: 15px;
+}
+.hero-section.sticky .container .input-group input[type="search"] {
+  width: 224px;
+  margin-top: 0;
+}
+.hero-section .container .api-btn {
+  margin-top: 12px;
+}
+.hero-section .container .api-btn button {
+  height: 34px;
+  width: 88px;
+  background-color: white;
+  border-radius: 16px;
+  padding: 5px 15px;
+  font-size: 20px;
+  transition: 0.3s;
+  margin: 0 3px;
+  cursor: pointer;
+}
+.hero-section.sticky .container .api-btn button {
+  display: none;
+}
+.hero-section .container .api-btn button:hover {
+  background-color: #009688;
+  color: white;
+}
+.hero-section .container .search {
+  display: flex;
+  display: none;
+  gap: 18px;
+  margin-top: 15px;
+  margin-bottom: 25px;
+}
+.hero-section.sticky .container .search {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+.hero-section.sticky .container .api-btn {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+.hero-section .container .search .quran {
+  height: 38px;
+  cursor: pointer;
+}
+.hero-section .container .search .input-group {
+  position: relative;
+}
+.hero-section .container .search input {
+  height: 38px;
+  width: 205px;
+  background-color: white;
+  border-radius: 16px;
+  padding: 0 15px;
+  font-size: 22px;
+}
+.hero-section .container .search .input-group span {
+  position: absolute;
+  left: 5px;
+  top: 4px;
+  cursor: pointer;
+}
+.hero-section .container .search .input-group span img {
+  transform: rotate(180deg);
+  transform-origin: center;
+}
+
+/* Quote generator */
+.quote {
+  background-color: white;
+  height: 311px;
+  padding: 36px;
+  border-radius: 30px;
+  font-size: 38px;
+  margin: 20px 0;
+  position: relative;
+}
+.quote q {
+  width: 80%;
+  position: absolute;
+  right: 50%;
+  top: 50%;
+  transform: translate(50%, -58%);
+}
+.quote > span {
+  font-size: 17px;
+  color: rgb(137, 137, 136);
+  position: absolute;
+  left: 36px;
+  bottom: 36px;
+}
+.quote .shrinking-bar {
+  width: 94%;
+  height: 4px;
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+}
+.quote .shrinking-bar span {
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, #4db6ac, #00695c);
+  border-radius: 10px;
+  display: block;
+  transition: 5s;
+  transition-timing-function: linear;
+}
+.quote-generator .generator {
+  width: fit-content;
+  margin: 0 auto;
+}
+.quote-generator .generator button,
+.btn {
+  height: 42px;
+  width: 140px;
+  background-color: white;
+  text-align: center;
+  border-radius: 20px;
+  padding: 6px 20px;
+  font-size: 20px;
+  transition: 0.3s;
+  margin: 0 3px;
+  cursor: pointer;
+}
+.quote-generator .generator button:hover,
+.btn:hover,
+.btn:hover button {
+  background-color: #009688;
+  color: white;
+}
+.quote-generator .generator .btn {
+  display: inline-flex;
+  align-items: center;
+}
+.quote-generator .generator .btn div {
+  width: fit-content;
+  padding: 0;
+  margin: 0;
+}
+.quote-generator .generator .btn span {
+  transform: translate(-17px, 0px);
+  background-image: url(../images/icons/play-circle.svg);
+  background-repeat: no-repeat;
+  width: 34px;
+  height: 34px;
+  transition: 0.3s;
+}
+.quote-generator .generator .btn:hover span {
+  background-image: url(../images/icons/play-circle-white.svg);
+}
+.quote-generator .generator .btn span.pause-play {
+  background-image: url(../images/icons/pause-circle.svg);
+}
+.quote-generator .generator .btn:hover span.pause-play {
+  background-image: url(../images/icons/pause-circle-white.svg);
+}
+
+/* Sowar */
+.sowar {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 30px;
+  gap: 15px;
+}
+.sowar .soura {
+  width: 277px;
+  height: 85px;
+  padding: 10px;
+  border-radius: 10px;
+  background-color: white;
+  display: flex;
+  align-items: end;
+  cursor: pointer;
+  transition: 0.3s;
+}
+.sowar .soura:hover {
+  background-color: #00897b;
+  transform: translateY(-5px);
+  box-shadow: 4px 4px 12px rgba(126, 126, 126, 0.597),
+    -4px -4px 12px rgba(126, 126, 126, 0.597);
+}
+.sowar .soura h2 {
+  font-size: 30px;
+  font-weight: normal;
+  margin-right: 19px;
+  transform: translateY(13px);
+}
+.sowar .soura:hover h2 {
+  color: white;
+}
+.sowar .soura span {
+  color: gray;
+  margin-right: 20px;
+}
+.sowar .soura:hover span {
+  color: white;
+}
+.sowar .soura div {
+  position: relative;
+}
+.sowar .soura div span {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -58%);
+  font-size: 17px;
+  color: #5b5b5b;
+}
+.sowar .soura:hover div span {
+  color: #009688;
+}
+
+/* Sidebar */
+aside {
+  position: fixed;
+  right: -400px;
+  top: 60px;
+  width: 400px;
+  height: 100%;
+  backdrop-filter: blur(12px);
+  background: linear-gradient(#a1a0a06b);
+  padding: 30px;
+  transition: 0.3s;
+}
+aside.toggle {
+  right: 0;
+}
+aside .box {
+  background-color: white;
+  border-radius: 4px;
+  padding: 10px;
+  margin-bottom: 20px;
+}
+aside .box input {
+  width: 90%;
+  height: 4px;
+  margin: 0 auto;
+  display: inline-block;
+}
+aside .box span {
+  font-size: 14px;
+  color: #5b5b5b;
+}
+aside .box h3 {
+  font-size: 25px;
+}
+aside .box hr {
+  border: none;
+  background: #d0cccc;
+  height: 2px;
+  margin-top: 5px;
+  margin-bottom: 15px;
+}
+aside .box ul {
+  overflow-y: scroll;
+  height: 160px;
+  direction: ltr;
+  padding-right: 3px;
+}
+
+/* Scrollbar Track */
+aside .box ul::-webkit-scrollbar {
+  width: 3px; /* For vertical scrollbar */
+}
+
+/* Scrollbar Thumb */
+aside .box ul::-webkit-scrollbar-thumb {
+  background: #118be6;
+}
+
+/* Scrollbar Track background */
+aside .box ul::-webkit-scrollbar-track {
+  background: #e3e1e1;
+}
+aside .box ul li {
+  border-radius: 5px;
+  padding: 7px;
+  background-color: #e3e1e1;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+aside .box ul li span {
+  color: rgb(153, 152, 152);
+  font-size: 12px;
+}
+aside .box ul li:hover {
+  background-color: #26a69a;
+  color: white;
+  transform: translateZ(12px);
+  box-shadow: 2px 2px 12px rgba(180, 179, 179, 0.597),
+    -2px -2px 12px rgba(176, 175, 175, 0.597);
+}
+aside .box ul li.check {
+  background-color: #00897b;
+  color: white;
+}
