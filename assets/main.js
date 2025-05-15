@@ -15,27 +15,28 @@ const UI = {
   fontSelector: document.querySelector(".fonts-box"),
   fontSizeInput: document.querySelector("aside .box input"),
   quoteText: document.querySelector(".quote-generator q"),
-  chaptersList: document.querySelector(".sowar"),
+  chaptersList: document.getElementById("chapters-container"),
   heroSection: document.querySelector(".hero-section"),
   generateBtn: document.querySelector(".generator button"),
   autoGenerateBtn: document.querySelector(".generator .btn"),
   apiButtons: document.querySelectorAll(".api-btn button"),
   pausePlayIcon: document.querySelector(".btn span"),
+  articleContainer : document.querySelector("article .container")
 };
 
 UI.burgerMenuBtn.addEventListener("click", () =>
   UI.sidebar.classList.toggle("toggle")
 );
 
-let allQuranLang;
-let quranInfo;
-let hadith;
+let allQuranLangPromis;
+let quranInfoPromis;
+let hadithPromis;
 
 if (localStorage.api === "Hadith") {
-  hadith = fetchUrl(jsonUrls.hadith);
+  hadithPromis = fetchUrl(jsonUrls.hadith);
 } else {
-  allQuranLang = fetchUrl(jsonUrls.quran);
-  quranInfo = fetchUrl(jsonUrls.quranInfo);
+  allQuranLangPromis = fetchUrl(jsonUrls.quran);
+  quranInfoPromis = fetchUrl(jsonUrls.quranInfo);
 }
 
 if (localStorage.lang !== undefined) {
@@ -51,7 +52,7 @@ async function fetchUrl(url) {
 }
 
 async function excludeLatinLanguage() {
-  const jsonData = await allQuranLang;
+  const jsonData = await allQuranLangPromis;
   let filteredData = {};
   for (let key in jsonData) {
     if (/_lad?/i.test(key)) continue;
@@ -62,7 +63,7 @@ async function excludeLatinLanguage() {
 excludeLatinLanguage();
 
 async function getQuranByLang(lang = "ara_quranwarsh") {
-  let jsonData = await allQuranLang;
+  let jsonData = await allQuranLangPromis;
   let languageUrl = jsonData[lang].linkmin;
   let quranJsonData = await fetchUrl(languageUrl);
   return quranJsonData.quran;
@@ -72,8 +73,8 @@ let quran = getQuranByLang();
 
 async function generateQuoteFromJson() {
   let verses = await quran;
-  let chaptersInfo = (await quranInfo).chapters;
-
+  let chaptersInfo = (await quranInfoPromis).chapters;
+  console.log( await chaptersInfo)
   UI.generateBtn.addEventListener("click", () =>
     generateQuote(chaptersInfo, verses)
   );
@@ -84,169 +85,151 @@ async function generateQuoteFromJson() {
   });
 
   UI.chaptersList.innerHTML = "";
-  createSoraBox(chaptersInfo);
+  createChapterBox(chaptersInfo);
   generateQuote(chaptersInfo, verses);
 }
 generateQuoteFromJson();
 
-async function createChapterList() {
-  quranInfo = await quranInfo;
-  let pagesInfo = quranInfo.pages.references;
-  let chaptersBtns = document.querySelectorAll(".sowar .soura");
+async function showChapterText() {
+  const chaptersInfo = (await quranInfoPromis).chapters;
+  const versesData = await quran;
 
-  chaptersBtns.forEach((button) => {
-    button.addEventListener("click", () => {
-      let currentChapterNum = +button.dataset.number;
-      showChapterText(currentChapterNum, pagesInfo);
-    });
+  UI.chaptersList.addEventListener("click", (e) => {
+    const button = e.target.closest(".chapter");
+    if (!button) return;
+    let currentChapterNum = +button.dataset.number;
+    let chapterName = chaptersInfo[currentChapterNum - 1].arabicname;
+    let versesInfo = chaptersInfo[currentChapterNum - 1].verses;
+    let chapterData = getChapterData(versesData, currentChapterNum);
+    let a = getPageText(chapterData, versesInfo, chapterName);
+    createArticle(a,versesInfo[0].page,chapterName);
   });
 }
-createChapterList();
+showChapterText();
 
-function showChapterText(currentChapterNum,pagesInfo) {
-  let chapterPageRange = getChapterPageRange(currentChapterNum, pagesInfo);
-  let urls = createPageUrlsFromRange(chapterPageRange);
+function getChapterData(versesData, chapterNum) {
+  return versesData.filter((verseData) => {
+    return chapterNum === verseData.chapter;
+  });
+}
 
-  (async () => {
-    for await (const jsonData of waitJsonDataLoad(urls)) {
-      let chapterPages = jsonData.pages;
-      let filteredVerses = chapterPages.filter((page) => {
-        return page.chapter === currentChapterNum;
-      });
-      console.log("this is filtered data", filteredVerses);
+function getPageText(chapterData, versesInfo, chapterName) {
+  let pageCounter,pages,textData;
+  pageCounter = versesInfo[0].page;
+  pages = {};
+  textData = []
+
+  versesInfo.forEach((verse, ind) => {
+    if (verse.page > pageCounter ) {
+      pages[pageCounter] = textData;
+      pageCounter = verse.page;
+      textData = []
+      }
+    textData.push(chapterData[ind]);
+  });
+
+  pages[pageCounter] = textData;
+  return pages;
+}
+
+function createArticle(pagesData,firstPage,chapterName) {
+  UI.articleContainer.innerHTML = "";
+  for (let ind in pagesData) {
+    let elements = createElements("page=div","titleBox=div","title=h2","p","pageText=p","pageNumber=span");
+    if (firstPage === +ind) {
+      elements.titleBox.className = "title-box"
+      elements.title.innerHTML = chapterName
+      elements.p.innerHTML = "بِسْمِ اِ۬للَّهِ اِ۬لرَّحْمَٰنِ اِ۬لرَّحِيمِ";
+      elements.titleBox.append(elements.title,elements.p)
+      elements.page.append(elements.titleBox)
     }
-  })();
-}
+    elements.page.className = "page";
+    elements.page.append(elements.pageText)
+    console.log(ind,pagesData[ind])
 
-function createPageUrlsFromRange(range) {
-  let urls = [];
-  const pagesUrl =
-    "https://cdn.jsdelivr.net/gh/fawazahmed0/quran-api@1/editions/ara-quranwarsh/pages/";
+    pagesData[ind].forEach(ayahData => {
+      let span = document.createElement("span");
+      let img = document.createElement("img");
+      img.src = "./assets/images/icons/verseIcon.svg"
+      span.innerHTML = ayahData.text;
+      span.append(img)
+      elements.pageText.append(span);
+    })
 
-  for (let i = range.startNum; i < range.endNum + 1; i++) {
-    urls.push(`${pagesUrl}${i}.json`);
+    elements.pageNumber.classList.add("page-number");
+    elements.pageNumber.innerHTML = ind;
+    elements.page.append(elements.pageNumber)
+    UI.articleContainer.append(elements.page)
   }
-  return urls;
+  console.log(UI.articleContainer)
 }
+function createSurahPage() {
+  elements.title.innerHTML = chapterName;
+  elements.surahText.append(elements.title);
+  let elements = createElements(
+    "surahText=div",
+    "title=h2",
+    "text=p",
+    "pageNumber=span"
+  );
 
-async function* waitJsonDataLoad(urls) {
-  for (const url of urls) {
-    const data = await fetchUrl(url);
-    yield data;
-  }
+  elements.pageNumber.innerHTML = pageCounter;
+  elements.surahText.append(elements.pageNumber);
+
+  elements.text.append(chapterData[ind].text);
+  elements.surahText.append(elements.text);
+
+  elements.pageNumber.innerHTML = pageCounter;
+  elements.surahText.append(elements.pageNumber);
 }
-/*
-Promise.all([quran, quranInfo])
-  .then(([verses, quranInfo]) => {
-    UI.generateBtn.addEventListener("click", () =>
-      generateQuote(quranInfo.chapters, verses)
-    );
-
-    UI.autoGenerateBtn.addEventListener("click", () => {
-      UI.pausePlayIcon.classList.toggle("pause-play");
-      autoGenerateQuote(quranInfo.chapters, verses);
-    });
-
-    UI.chaptersList.innerHTML = "";
-    createSoraBox(quranInfo.chapters);
-    generateQuote(quranInfo.chapters, verses);
-
-    return [verses, quranInfo];
-  })
-  .then(([verses, quranInfo]) => {
-    let pagesInfo = quranInfo.pages.references;
-    let chaptersBtns = document.querySelectorAll(".sowar .soura");
-
-    chaptersBtns.forEach((button) => {
-      button.addEventListener("click", () => {
-        let currentChapterNum = parseInt(button.dataset.number);
-        let chapterPageRange = getChapterPageRange(
-          currentChapterNum,
-          pagesInfo
-        );
-        let urls = [];
-        const pagesUrl =
-          "https://cdn.jsdelivr.net/gh/fawazahmed0/quran-api@1/editions/ara-quranwarsh/pages/";
-
-        for (
-          let i = chapterPageRange.startNum;
-          i < chapterPageRange.endNum + 1;
-          i++
-        ) {
-          urls.push(`${pagesUrl}${i}.json`);
-        }
-        async function* waitLoad(urls) {
-          for (const url of urls) {
-            const data = await fetchUrl(url);
-            yield data;
-          }
-        }
-        console.log("this is range" ,chapterPageRange);
-        (async () => {
-          let i = chapterPageRange.startNum;
-          for await (const jsonData of waitLoad(urls)) {
-            let chapterPages = jsonData.pages;
-            console.log(i,chapterPageRange.startNum)
-            if (chapterPageRange.startNum === i) {
-              let filteredChapter = chapterPages.filter((page) => {
-                return page.chapter === currentChapterNum;
-              });
-              console.log(filteredChapter)
-              // console.log(chapterNum);
-            }
-            console.log("page Number: ", i, jsonData);
-            i++;
-          }
-          if (chapterPageRange.endNum + 1 === i)
-            console.log("start and end page: ", i);
-        })();
-      });
-    });
-  });
-*/
 
 function createList(obj) {
   for (let key in obj) {
-    let li = document.createElement("li");
-    let span = document.createElement("span");
-    li.innerHTML = obj[key].language;
-    li.dataset.link = obj[key].linkmin;
-    span.innerHTML = `   (${obj[key].author})`;
-    li.append(span);
-    UI.languageSelector.append(li);
+    let elements = createElements("li", "span");
+    elements.li.innerHTML = obj[key].language;
+    elements.li.dataset.link = obj[key].linkmin;
+    elements.span.innerHTML = `   (${obj[key].author})`;
+    elements.li.append(elements.span);
+    UI.languageSelector.append(elements.li);
   }
 }
 
-function createSoraBox(sowar) {
-  for (let sora of sowar) {
-    let souraBox = document.createElement("div");
-    let div = document.createElement("div");
-    let spanNum = document.createElement("span");
-    let img = document.createElement("img");
-    let h2 = document.createElement("h2");
-    let span = document.createElement("span");
-    souraBox.className = "soura";
-    souraBox.dataset.number = sowar.indexOf(sora) + 1;
-    spanNum.innerHTML = sowar.indexOf(sora) + 1;
-    img.src = "./assets/images/icons/aya-num.svg";
-    h2.innerHTML = sora.arabicname;
-    span.innerHTML = sora.verses.length + " اية";
-    div.append(spanNum, img);
-    souraBox.append(div, h2, span);
-    UI.chaptersList.append(souraBox);
-    UI.chaptersList.appendChild(souraBox);
-  }
+function createChapterBox(allChapters) {
+  console.log(allChapters);
+  // let surahs = []
+  allChapters.forEach((chapter, ind) => {
+    let elements = createElements(
+      "chapterBox=div",
+      "div",
+      "span",
+      "spanNum=span",
+      "img",
+      "h2"
+    );
+    elements.chapterBox.className = "chapter";
+    elements.chapterBox.dataset.number = ind + 1;
+    elements.spanNum.innerHTML = ind + 1;
+    elements.img.src = "./assets/images/icons/aya-num.svg";
+    elements.h2.innerHTML = chapter.arabicname;
+    elements.span.innerHTML = chapter.verses.length + " اية";
+    elements.div.append(elements.spanNum, elements.img);
+    elements.chapterBox.append(elements.div, elements.h2, elements.span);
+    UI.chaptersList.append(elements.chapterBox);
+    // surahs.push(elements.chapterBox)
+  });
+  // return surahs;
 }
 
-function generateQuote(quranChapters, verses) {
+function generateQuote(chaptersInfo, verses) {
+  console.log(chaptersInfo, verses);
   let randomNum = parseInt(Math.random() * verses.length);
   let span = document.querySelector(".quote span");
 
-  for (let obj of quranChapters) {
-    if (obj.chapter === verses[randomNum].chapter) {
-      for (let verseObj of obj.verses) {
+  for (let surahDetails of chaptersInfo) {
+    if (surahDetails.chapter === verses[randomNum].chapter) {
+      for (let verseObj of surahDetails.verses) {
         if (verses[randomNum].verse === verseObj.verse) {
-          span.innerHTML = ` الاية ${verseObj.verse} من ${obj.arabicname} `;
+          span.innerHTML = ` الاية ${verseObj.verse} من ${surahDetails.arabicname} `;
         }
       }
     }
@@ -254,6 +237,19 @@ function generateQuote(quranChapters, verses) {
   UI.quoteText.innerHTML = verses[randomNum].text;
 }
 
+function createElements(...elementsName) {
+  let elements = {};
+  elementsName.forEach((element) => {
+    element = element.split("=");
+    if (element.length == 2) {
+      elements[element[0]] = document.createElement(element[1]);
+    } else {
+      elements[element[0]] = document.createElement(element[0]);
+    }
+  });
+  return elements;
+}
+console.log("kdslfls".split("="));
 let isGenerating = false;
 let intervalId;
 let shrinkingBar = document.querySelector(".shrinking-bar span");
@@ -277,38 +273,4 @@ function autoGenerateQuote(quranChapters, verses) {
     }
   }, 5000);
   isGenerating = true;
-}
-
-function getChapterPageRange(currentChapterNum, pagesInfo) {
-  let maxChapterNum = 114;
-  let minChapterNum = 1;
-  let lastPage = 604;
-  let lastChapter = 112;
-
-  if (currentChapterNum > maxChapterNum || currentChapterNum < minChapterNum)
-    return "no chapter";
-  if (currentChapterNum >= lastChapter)
-    return { startNum: lastPage, endNum: lastPage };
-
-  let startNum = getStartPage(currentChapterNum, pagesInfo);
-  let endNum = getEndPage(currentChapterNum, pagesInfo, startNum) - 1;
-  return { startNum, endNum };
-}
-
-function getStartPage(currentChapterNum, pagesInfo) {
-  for (let ind in pagesInfo) {
-    let previousPage = pagesInfo[ind - 1];
-    let pageDetail = pagesInfo[ind];
-    if (pageDetail.start.chapter === currentChapterNum) {
-      if (pageDetail.start.verse === 1) return pageDetail.page;
-      return previousPage.page;
-    }
-    if (pageDetail.start.chapter > currentChapterNum) return previousPage.page;
-  }
-}
-
-function getEndPage(currentChapterNum, pagesInfo, startNum) {
-  return pagesInfo.slice(startNum).find((pageNum) => {
-    return pageNum.start.chapter !== currentChapterNum;
-  }).page;
 }

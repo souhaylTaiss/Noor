@@ -95,7 +95,7 @@ nav .container .menu {
   background-color: rgba(255, 255, 255, 0.07);
   box-shadow: 0 6px 26px #00000026;
   margin-top: 60px;
-  transition: .3s;
+  transition: 0.3s;
 }
 .hero-section.sticky {
   position: fixed;
@@ -197,8 +197,45 @@ nav .container .menu {
   transform: rotate(180deg);
   transform-origin: center;
 }
+/* Article */
+article {
+  margin-top: 20px;
+}
+article .page .title-box {
+  margin-bottom: 25px;
+  text-align: center;
+}
+article .page {
+  width: fit-content;
+  background-color: white;
+  border-radius: 5px;
+  padding: 73px 106px;
+  margin: 30px auto;
+  text-align: center;
+  font-size: 34px;
+  position: relative;
+}
+article .page > p {
+  width: 430px;
+  margin: 0 auto;
+  text-align: justify;
+}
+article .page > p img {
+  width: 25px;
+  margin: 0 6px;
+}
+article .page .page-number {
+  position: absolute;
+  bottom: 10px;
+  font-size: 25px;
+  color: #646363;
+  text-align: center;
+}
 
 /* Quote generator */
+main {
+  margin-top: 30px;
+}
 .quote {
   background-color: white;
   height: 311px;
@@ -289,14 +326,14 @@ nav .container .menu {
   background-image: url(../images/icons/pause-circle-white.svg);
 }
 
-/* Sowar */
-.sowar {
+/* Quran chapters-container */
+.chapters-container {
   display: flex;
   flex-wrap: wrap;
   margin-top: 30px;
   gap: 15px;
 }
-.sowar .soura {
+.chapters-container .chapter {
   width: 277px;
   height: 85px;
   padding: 10px;
@@ -307,32 +344,32 @@ nav .container .menu {
   cursor: pointer;
   transition: 0.3s;
 }
-.sowar .soura:hover {
+.chapters-container .chapter:hover {
   background-color: #00897b;
   transform: translateY(-5px);
   box-shadow: 4px 4px 12px rgba(126, 126, 126, 0.597),
     -4px -4px 12px rgba(126, 126, 126, 0.597);
 }
-.sowar .soura h2 {
+.chapters-container .chapter h2 {
   font-size: 30px;
   font-weight: normal;
   margin-right: 19px;
   transform: translateY(13px);
 }
-.sowar .soura:hover h2 {
+.chapters-container .chapter:hover h2 {
   color: white;
 }
-.sowar .soura span {
+.chapters-container .chapter span {
   color: gray;
   margin-right: 20px;
 }
-.sowar .soura:hover span {
+.chapters-container .chapter:hover span {
   color: white;
 }
-.sowar .soura div {
+.chapters-container .chapter div {
   position: relative;
 }
-.sowar .soura div span {
+.chapters-container .chapter div span {
   position: absolute;
   left: 50%;
   top: 50%;
@@ -340,7 +377,7 @@ nav .container .menu {
   font-size: 17px;
   color: #5b5b5b;
 }
-.sowar .soura:hover div span {
+.chapters-container .chapter:hover div span {
   color: #009688;
 }
 
