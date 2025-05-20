@@ -10,10 +10,19 @@
     <header>
       <nav>
         <div class="container">
-          <div class="menu">
-            <img src="./assets/images/icons/menu.svg" alt="" />
-          </div>
           <div>
+            <div class="menu">
+              <img src="./assets/images/icons/menu.svg" alt="" />
+            </div>
+            <div class="language">
+              <img src="./assets/images/icons/language.svg" alt="">
+              <ul>
+                <li data-lang="ar" class="active">Arabic</li>
+                <li data-lang="en">English</li>
+              </ul>
+            </div>
+          </div>
+            <div>
             <a href="index.html"
               ><img src="./assets/images/icons/logo.svg" alt=""
             /></a>
@@ -27,12 +36,12 @@
           <h1>NoorQuote</h1>
 
           <div class="api-btn">
-            <button type="button" value="quran">القران</button>
-            <button type="button" value="hadith">الحديث</button>
+            <button type="button" value="quran" data-i18n="quranBtn">القران</button>
+            <button type="button" value="hadith" data-i18n="hadithBtn">الحديث</button>
           </div>
 
           <div class="input-group">
-            <input type="search" placeholder="ابحث عن اية او حديث" />
+            <input type="search" data-i18n="inputSearch" placeholder="ابحث عن اية او حديث" />
             <span><i class="fa-solid fa-magnifying-glass"></i></span>
           </div>
 
@@ -63,59 +72,58 @@
     </header>
 
     <article>
-      <div class="container">
+      <div class="container font-family font-size">
       </div>
     </article>
 
     <main>
       <div class="container">
-        <div class="quote-generator">
-          <div class="quote">
-            <q>
-              إِنَّ ٱلَّذِينَ كَفَرُوا۟ سَوَآءٌ عَلَيْهِمْ ءَأَنذَرْتَهُمْ أَمْ
-              لَمْ تُنذِرْهُمْ لَا يُؤْمِنُونَ ٦ خَتَمَ ٱللَّهُ عَلَىٰ
-              قُلُوبِهِمْ وَعَلَىٰ سَمْعِهِمْ ۖ وَعَلَىٰٓ أَبْصَـٰرِهِمْ
-              غِشَـٰوَةٌۭ ۖ وَلَهُمْ عَذَابٌ عَظِيمٌۭ ٧
-            </q>
-            <span>الاية 6 و 7 من سورة البقرة</span>
+        <div class="quote-generator font-family">
+          <div class="quote font-size">
+            <p>
+            </p>
+            <div ><span></span> <span></span>  </div>
             <div class="shrinking-bar"><span></span></div>
           </div>
 
-          <div class="generator">
-            <button type="button">إقتراح</button>
+          <div class="generator ">
+            <div class="btn firstBtn" data-i18n="suggestBtn">إقتراح</div>
 
-            <div class="btn">
-              <div>إقتراح آلي</div>
+            <div class="btn lastBtn" >
+              <div data-i18n="autoSuggestBtn">إقتراح آلي</div>
               <span></span>
             </div>
           </div>
         </div>
 
-        <div class="chapters-container" id="chapters-container">
-
+        <div class="chapters-container font-family" id="chapters-container">
         </div>
       </div>
     </main>
 
-    <aside>
+    <aside >
       <div class="box">
-        <h3>حجم الخط</h3>
+        <h3 data-i18n="fontSize">حجم الخط</h3>
         <hr />
         <span>1</span>
-        <input type="range" name="font-size" id="font-size" min="1" max="30" />
-        <span>30</span>
+        <input type="range" name="font-size" id="font-size" min="22" max="48" value="22"/>
+        <span>26</span>
       </div>
       <div class="box">
-        <h3>اللغات</h3>
+        <h3 data-i18n="languages">اللغات</h3>
         <hr />
         <ul class="language-box"></ul>
       </div>
       <div class="box">
-        <h3>الخطوط</h3>
+        <h3 data-i18n="fontsFamily">الخطوط</h3>
         <hr />
         <ul class="fonts-box"></ul>
       </div>
     </aside>
+
+    <footer>
+      <p></p>
+    </footer>
     <div class="overlay"></div>
     <script src="./assets/main.js"></script>
   </body>

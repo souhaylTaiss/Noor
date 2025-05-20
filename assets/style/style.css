@@ -1,3 +1,10 @@
+@font-face {
+  font-family: "default";
+  src: url("https://cdn.jsdelivr.net/gh/fawazahmed0/quran-api@1/fonts/amiri-bold1.woff2")
+      format("woff2"),
+    url("https://cdn.jsdelivr.net/gh/fawazahmed0/quran-api@1/fonts/amiri-bold1.woff")
+      format("woff");
+}
 * {
   box-sizing: border-box;
   margin: 0;
@@ -11,6 +18,10 @@ body {
   background-repeat: no-repeat;
   background-attachment: fixed;
   background-size: cover;
+}
+.font-family {
+  font-family: "default", sans-serif;
+  line-height: 2;
 }
 .overlay {
   width: 100%;
@@ -86,8 +97,47 @@ nav .container {
   justify-content: space-between;
   align-items: center;
 }
+nav .container > div:first-child {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
 nav .container .menu {
   cursor: pointer;
+}
+nav .container .language {
+  position: relative;
+}
+nav .container .language img {
+  cursor: pointer;
+}
+nav .container .language ul {
+  color: white;
+  background-color: #0e6159;
+  transform: translate(0px, 20px);
+  position: absolute;
+  border-radius: 4px;
+  text-align: start;
+  transition: 0.3s;
+  opacity: 0;
+  overflow: hidden;
+}
+nav .container .language ul.active {
+  opacity: 1;
+}
+nav .container .language ul li {
+  padding: 6px 14px;
+  text-align: end;
+  font-size: 18px;
+}
+nav .container .language ul li:hover {
+  background-color: #009688;
+  color: white;
+  cursor: pointer;
+}
+nav .container .language ul li.active {
+  background-color: #009688;
+  color: white;
 }
 
 .hero-section {
@@ -200,29 +250,42 @@ nav .container .menu {
 /* Article */
 article {
   margin-top: 20px;
+  font-size: 24px;
 }
 article .page .title-box {
-  margin-bottom: 25px;
+  margin-bottom: 33px;
   text-align: center;
 }
+article .page .title-box h2 {
+  transform: translateY(-26px);
+}
 article .page {
-  width: fit-content;
+  max-width: 570px;
+  width: 100%;
   background-color: white;
-  border-radius: 5px;
-  padding: 73px 106px;
+  border-radius: 3px;
+  padding: 80px;
   margin: 30px auto;
   text-align: center;
-  font-size: 34px;
+  line-height: 2;
   position: relative;
 }
 article .page > p {
-  width: 430px;
-  margin: 0 auto;
   text-align: justify;
 }
-article .page > p img {
-  width: 25px;
-  margin: 0 6px;
+article .page > p .verse-number {
+  background-image: url("../images/icons/verseIcon.svg");
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center;
+  text-align: center;
+  width: 2em;
+  font-size: 62%;
+  padding: 5px;
+  margin: 0 4px 0 5px;
+  color: #313131;
+  display: inline-block;
+  transform: translateY(-3px);
 }
 article .page .page-number {
   position: absolute;
@@ -238,21 +301,21 @@ main {
 }
 .quote {
   background-color: white;
-  height: 311px;
-  padding: 36px;
+  min-height: 390px;
+  padding: 28px;
   border-radius: 30px;
-  font-size: 38px;
+  font-size: 22px;
   margin: 20px 0;
   position: relative;
 }
-.quote q {
+.quote p {
   width: 80%;
   position: absolute;
   right: 50%;
   top: 50%;
-  transform: translate(50%, -58%);
+  transform: translate(50%, -50%);
 }
-.quote > span {
+.quote  div {
   font-size: 17px;
   color: rgb(137, 137, 136);
   position: absolute;
@@ -279,29 +342,24 @@ main {
 .quote-generator .generator {
   width: fit-content;
   margin: 0 auto;
+  display: flex;
 }
-.quote-generator .generator button,
-.btn {
-  height: 42px;
-  width: 140px;
+.quote-generator .generator .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 140px;
   background-color: white;
-  text-align: center;
   border-radius: 20px;
-  padding: 6px 20px;
+  padding: 0px 20px;
   font-size: 20px;
   transition: 0.3s;
   margin: 0 3px;
   cursor: pointer;
 }
-.quote-generator .generator button:hover,
-.btn:hover,
-.btn:hover button {
+.quote-generator .generator .btn:hover {
   background-color: #009688;
   color: white;
-}
-.quote-generator .generator .btn {
-  display: inline-flex;
-  align-items: center;
 }
 .quote-generator .generator .btn div {
   width: fit-content;
@@ -335,14 +393,15 @@ main {
 }
 .chapters-container .chapter {
   width: 277px;
-  height: 85px;
-  padding: 10px;
+  height: 80px;
+  padding: 12px;
   border-radius: 10px;
   background-color: white;
   display: flex;
-  align-items: end;
+  align-items: self-start;
   cursor: pointer;
   transition: 0.3s;
+  position: relative;
 }
 .chapters-container .chapter:hover {
   background-color: #00897b;
@@ -351,17 +410,19 @@ main {
     -4px -4px 12px rgba(126, 126, 126, 0.597);
 }
 .chapters-container .chapter h2 {
-  font-size: 30px;
+  font-size: 25px;
   font-weight: normal;
-  margin-right: 19px;
-  transform: translateY(13px);
+  padding: 0 10px;
+  transform: translateY(6px);
 }
 .chapters-container .chapter:hover h2 {
   color: white;
 }
-.chapters-container .chapter span {
+.chapters-container .chapter > span {
   color: gray;
-  margin-right: 20px;
+  position: absolute;
+  left: 13px;
+  bottom: 24px;
 }
 .chapters-container .chapter:hover span {
   color: white;
@@ -427,6 +488,8 @@ aside .box ul {
   height: 160px;
   direction: ltr;
   padding-right: 3px;
+  position: relative;
+  scroll-behavior: smooth;
 }
 
 /* Scrollbar Track */
@@ -462,7 +525,7 @@ aside .box ul li:hover {
   box-shadow: 2px 2px 12px rgba(180, 179, 179, 0.597),
     -2px -2px 12px rgba(176, 175, 175, 0.597);
 }
-aside .box ul li.check {
+aside .box ul li.active {
   background-color: #00897b;
   color: white;
 }
