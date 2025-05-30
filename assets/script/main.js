@@ -184,7 +184,6 @@ const chaptersInfo = quran.chaptersInfo
   changeLanguageWhenClick()
   showBookWhenclick();
   generateQuoteFromJson(quran)
-//   setupFontOptions()
 }
 
 // initApp();
@@ -200,8 +199,8 @@ async function initAppHadith() {
   changeLanguageWhenClick();
   showBookWhenclick();
   generateQuoteFromJson(bookDetails.hadiths);
-  // setupFontOptions()
 }
+// setupFontOptions()
 
 function showBookWhenclick() {
   let booksBox = UI.chaptersList.querySelectorAll("[data-number]");
@@ -235,21 +234,6 @@ function showBookWhenclick() {
   });
 }
 
-// function showChapterWhenclick() {
-//   let chaptersBox = UI.chaptersList.querySelectorAll("[data-number]");
-
-//   chaptersBox.forEach((li) => {
-//     li.addEventListener("click", async () => {
-//       const quranData = await QuranService.getQuranByLang(language);
-//       const quran = quranData.quran;
-//       const chaptersInfo = quranData.chaptersInfo;
-
-//       let chapterNum = +li.dataset.number;
-//       let chapterName = chaptersInfo[chapterNum - 1][articleTitleLang];
-//       createArticle([chapterName, chapterNum, chaptersInfo, quran]);
-//     });
-//   });
-// }
 
 function createTextBook(bookData) {
   UI.articleContainer.innerHTML = "";
@@ -433,26 +417,6 @@ function changeLanguageWhenClick(articleTitleLang) {
   });
 }
 
-// function changeLanguageWhenClick(articleTitleLang) {
-//   let languagesList = UI.languageSelector.querySelectorAll("li");
-
-//   languagesList.forEach((li) => {
-//     li.addEventListener("click", async () => {
-//       language = li.dataset.language;
-//       direction = li.dataset.direction;
-//       articleTitleLang = language.startsWith("ara") ? "arabicname" : "name";
-
-//       const quran = await QuranService.getQuranByLang(language);
-
-//       UI.articleContainer.dir = direction;
-//       UI.quoteText.parentElement.dir = direction;
-
-//       activateElement(languagesList, li);
-//       generateQuoteFromJson(quran.randomVerse);
-//       translateArticleIfExists(quran);
-//     });
-//   });
-// }
 
 function activateElement([...elements], li) {
   elements.forEach((li) => li.classList.remove("active"));
@@ -463,48 +427,6 @@ function activateElement([...elements], li) {
 let generateHandler = null;
 let autoGenerateHandler = null;
 
-// function generateQuoteFromJson(verses) {
-//   generate(verses);
-
-//   if (generateHandler && autoGenerateHandler) {
-//     UI.generateBtn.removeEventListener("click", generateHandler);
-//     UI.autoGenerateBtn.removeEventListener("click", autoGenerateHandler);
-//   }
-
-//   generateHandler = (_) => generate(verses);
-//   UI.generateBtn.addEventListener("click", generateHandler);
-
-//   autoGenerateHandler = (_) =>
-//     autoGenerateQuote(verses);
-//   UI.autoGenerateBtn.addEventListener("click", autoGenerateHandler);
-// }
-
-// let intervalId;
-// let isGenerating = false;
-// let shrinkingBar = document.querySelector(".shrinking-bar span");
-
-// function autoGenerateQuote(chaptersInfo, verses, language) {
-//   UI.pausePlayIcon.classList.toggle("pause-play");
-
-//   if (isGenerating) {
-//     clearInterval(intervalId);
-//     shrinkingBar.style.width = "100%";
-//     isGenerating = false;
-//     return;
-//   }
-
-//   generate(chaptersInfo, verses, language);
-//   shrinkingBar.style.width = 0;
-
-//   intervalId = setInterval(() => {
-//     generate(chaptersInfo, verses, language);
-//     if (shrinkingBar.clientWidth === 0) {
-//       shrinkingBar.style.width = "100%";
-//     } else shrinkingBar.style.width = 0;
-//   }, 5000);
-
-//   isGenerating = true;
-// }
 
 async function generateQuoteFromJson(data) {
   generate(data);
@@ -562,18 +484,6 @@ async function generate(data) {
 
 }
 
-// function generate(verses) {
-//   let randomAyahDetails = QuranService.getRandomQuote(
-//     chaptersInfo,
-//     verses,
-//     language
-//   );
-//   UI.quoteText.innerHTML = verses[1];
-//   UI.quoteDetails.innerHTML = `${verses.ayah} ${verses[2]} ${verses.surah} ${verses[3]}`;
-// }
-
-// for hadith
-
 async function translateArticleIfExists(data, articleTitleLang) {
   let articleChildren = UI.articleContainer.children;
   if (!articleChildren.length) return;
@@ -592,14 +502,6 @@ async function translateArticleIfExists(data, articleTitleLang) {
 
 }
 
-// async function translateArticleIfExists(quran, chaptersInfo, articleTitleLang) {
-//   let articleChildren = UI.articleContainer.children;
-//   if (articleChildren.length) {
-//     let chapterNum = +UI.articleContainer.dataset.chapterNum;
-//     let chapterName = chaptersInfo[chapterNum - 1][articleTitleLang];
-//     createArticle([chapterName, +chapterNum, chaptersInfo, quran]);
-//   }
-// }
 
 function createElements(...elementsName) {
   let elements = {};
