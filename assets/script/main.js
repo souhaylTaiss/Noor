@@ -2,35 +2,7 @@
 import { getAllFonts } from "./fonts.js";
 import { QuranService } from "../script/quran.js";
 import { HadithService } from "../script/hadith.js";
-
-const translitions = {
-  ar: {
-    quranBtn: "القران",
-    hadithBtn: "الحديث",
-    inputSearch: "ابحث عن اية او حديث",
-    settings: "الاعدادات",
-    suggestBtn: "إقتراح",
-    autoSuggestBtn: "إقتراح آلي",
-    ayah: "اية",
-    fontSize: "حجم الخط",
-    languages: "لغات القران",
-    fontsFamily: "الخطوط",
-    websiteLanguage: "لغة الموقع",
-  },
-  en: {
-    quranBtn: "Quran",
-    hadithBtn: "Hadith",
-    inputSearch: "Search for Aya or Hadith",
-    settings: "Settings",
-    suggestBtn: "Suggest",
-    autoSuggestBtn: "Auto suggest",
-    ayah: "Ayah",
-    fontSize: "Font size",
-    languages: "Quran Languages",
-    fontsFamily: "Fonts",
-    websiteLanguage: "Website language",
-  },
-};
+import { fetchUrl } from "./utils.js";
 
 const UI = {
   burgerMenuBtn: document.querySelector(".menu"),
@@ -39,7 +11,10 @@ const UI = {
   sidebar: document.querySelector("aside"),
   languageSelector: document.querySelector(".language-box"),
   fontSelector: document.querySelector(".fonts-box"),
-  fontSizeInput: document.querySelector("aside .box input"),
+  fontSizeIncrease: document.querySelector("aside .box .increase"),
+  fontSizeDecrease: document.querySelector("aside .box .reduce"),
+  quranBtn: document.querySelector(".api-btn button:first-child"),
+  hadithBtn: document.querySelector(".api-btn button:last-child"),
   inputSearch: document.querySelector("input[type='search']"),
   quoteText: document.querySelector(".quote-generator p"),
   quoteDetails: document.querySelector(".quote span"),
@@ -47,7 +22,6 @@ const UI = {
   heroSection: document.querySelector(".hero-section"),
   generateBtn: document.querySelector(".generator .btn:first-child"),
   autoGenerateBtn: document.querySelector(".generator .btn:last-child"),
-  apiButtons: document.querySelectorAll(".api-btn button"),
   pausePlayIcon: document.querySelector(".btn span"),
   articleContainer: document.querySelector("article .container"),
 };
@@ -65,50 +39,58 @@ UI.closeBtn.addEventListener("click", () =>
 );
 
 // Change language
+let isItQuran = true;
 
 UI.websiteLanguagesList.forEach((btn) => {
   btn.addEventListener("click", () => {
     UI.websiteLanguagesList[0].classList = "";
     UI.websiteLanguagesList[1].classList = "";
-    setLanguage(btn.dataset.lang);
+    let lang = btn.dataset.lang;
+    let dir = btn.dataset.dir;
+    setLanguage(lang, dir);
     btn.classList = "active";
   });
 });
 
-async function setLanguage(lang = "ar") {
-  let chaptersInfo, isArabic, dir, elements;
+async function setLanguage(lang = "ar", dir = "rtl") {
+  let chaptersInfo, elements;
 
-  chaptersInfo = (await QuranService.getQuranByLang()).chaptersInfo;
+  if (isItQuran) {
+    chaptersInfo = (await QuranService.getQuranByLang(language)).chaptersInfo;
+    changeChapterBoxLanguage(lang, chaptersInfo);
+  }
 
-  isArabic = lang === "ar" ? true : false;
-  dir = isArabic ? "rtl" : "ltr";
+  let translations = await fetchUrl("./assets/script/translations.json");
+
   elements = document.querySelectorAll("[data-i18n]");
 
   elements.forEach((ele) => {
-    ele.innerHTML = translitions[lang][ele.dataset.i18n];
+    const path = ele.dataset.i18n.split(".");
+    let text = translations[lang];
+    path.forEach((key) => {
+      text = text[key];
+    });
+    ele.innerHTML = text;
     ele.dir = dir;
   });
 
-  UI.inputSearch.setAttribute("placeholder", translitions[lang].inputSearch);
+  UI.inputSearch.setAttribute("placeholder", translations[lang].UI.inputSearch);
   UI.chaptersList.dir = dir;
   UI.sidebar.querySelector(".title").classList.toggle("direction");
-
-  changeChapterBoxlanguage(isArabic, chaptersInfo);
 }
-// setLanguage();
+setLanguage();
 
-function changeChapterBoxlanguage(isArabic, chaptersInfo) {
+function changeChapterBoxLanguage(lang, chaptersInfo) {
   let name = "name",
     leftValue = "auto",
     rightValue = "13px",
     ayah = "Ayah";
 
-  if (isArabic) {
+  if (lang === "ar") {
     name = "arabicname";
     [leftValue, rightValue] = [rightValue, leftValue];
     ayah = "اية";
   }
-
   UI.chaptersList.querySelectorAll(".chapter").forEach((ele, ind) => {
     ele.children[1].innerHTML = chaptersInfo[ind][name];
     ele.children[2].style.left = leftValue;
@@ -117,14 +99,47 @@ function changeChapterBoxlanguage(isArabic, chaptersInfo) {
   });
 }
 
-UI.fontSizeInput.addEventListener("input", (ele) => {
-  [UI.quoteText, UI.articleContainer].forEach(
-    (el) => (el.style.fontSize = ele.target.value + "px")
-  );
+let fontSize = 22;
+let scale = 1;
+let range = 1;
+UI.fontSizeIncrease.addEventListener("click", () => {
+  if (range === 10) {
+    UI.fontSizeIncrease.style.opacity = ".5";
+
+    return;
+  } else {
+    UI.fontSizeIncrease.style.opacity = "1";
+    UI.fontSizeDecrease.style.opacity = "1";
+  }
+
+  fontSize++;
+  range++;
+  scale += 0.1;
+  scale = +scale.toFixed(1);
+  UI.fontSizeIncrease.nextElementSibling.innerHTML = range;
+  UI.quoteText.style.fontSize = `${fontSize}px`;
+  UI.articleContainer.style.transform = `scale(${scale})`;
+});
+
+UI.fontSizeDecrease.addEventListener("click", () => {
+  if (range === 1) {
+    UI.fontSizeDecrease.style.opacity = ".5";
+    return;
+  } else {
+    UI.fontSizeIncrease.style.opacity = "1";
+    UI.fontSizeDecrease.style.opacity = "1";
+  }
+
+  fontSize--;
+  range--;
+  scale -= 0.1;
+  scale = +scale.toFixed(1);
+  UI.quoteText.style.fontSize = `${fontSize}px`;
+  UI.fontSizeIncrease.nextElementSibling.innerHTML = range;
+  UI.articleContainer.style.transform = `scale(${scale})`;
 });
 
 // Set fonts
-
 let elementsFont = document.querySelectorAll(".font-family");
 let styleElement = document.createElement("style");
 document.head.append(styleElement);
@@ -160,49 +175,35 @@ function addFontToStyle(li) {
   if (!isIncludeFont) styleElement.append(fontFace);
 }
 
+UI.quranBtn.addEventListener("click", async () => {
+  const quranLanguages = await QuranService.filteredLanguages();
+  const quranData = await QuranService.getQuranByLang(language);
+  const chaptersInfo = quranData.chaptersInfo;
+  isItQuran = true;
+  initApp(quranData, chaptersInfo, quranLanguages);
+});
 
-let isItQuran = false;
-
-if (isItQuran) {
-  initAppQuran()
-} else {
-  initAppHadith()
-}
+UI.hadithBtn.addEventListener("click", async () => {
+  const hadithData = await HadithService.hadithData();
+  const hadithLanguages = hadithData.languagesOfBook;
+  const books = hadithData.hadithBooks;
+  const bookDetails = hadithData.bookDetails.hadiths;
+  isItQuran = false;
+  initApp(bookDetails, books, hadithLanguages);
+});
 
 // Get Quran
-async function initAppQuran() {
-  const quranLanguages = await QuranService.filteredLanguages();
-  console.log(language)
-  const quran = await QuranService.getQuranByLang(language);
-const chaptersInfo = quran.chaptersInfo
-  createListInSidebar(
-    quranLanguages,
-    UI.languageSelector,
-    "language"
-  );
-  createChapterBox(chaptersInfo, true);
-  changeLanguageWhenClick()
-  showBookWhenclick();
-  generateQuoteFromJson(quran)
-}
-
-// initApp();
-async function initAppHadith() {
-  const hadithData = await HadithService.hadithData();
-
-  let languages = hadithData.languagesOfBook;
-  let books = hadithData.hadithBooks;
-  const bookDetails =  hadithData.bookDetails;
-
+async function initApp(data, dataInfo, languages) {
+  const translations = await fetchUrl("./assets/script/translations.json");
+  UI.articleContainer.innerHTML = "";
   createListInSidebar(languages, UI.languageSelector, "language");
-  createChapterBox(books);
+  createChapterBox(dataInfo, translations);
   changeLanguageWhenClick();
-  showBookWhenclick();
-  generateQuoteFromJson(bookDetails.hadiths);
+  showBookWhenClick();
+  generateQuoteFromJson(data);
 }
-// setupFontOptions()
 
-function showBookWhenclick() {
+function showBookWhenClick() {
   let booksBox = UI.chaptersList.querySelectorAll("[data-number]");
 
   booksBox.forEach((li) => {
@@ -214,13 +215,14 @@ function showBookWhenclick() {
         const quran = quranData.quran;
         const chaptersInfo = quranData.chaptersInfo;
 
-        let title = chaptersInfo[dataNumber - 1][articleTitleLang];
-        createArticle([title, dataNumber, chaptersInfo, quran]);
+        let title = chaptersInfo[dataNumber][articleTitleLang];
+        createArticle([title, dataNumber + 1, chaptersInfo, quran]);
       } else {
         const hadithData = await HadithService.hadithData(dataNumber);
+        const translations = await fetchUrl("./assets/script/translations.json");
         const bookDetails = hadithData.bookDetails;
 
-        let title = bookDetails.title;
+        let title = bookDetails.bookName;
         let sections = bookDetails.sections;
         let languages = hadithData.languagesOfBook;
 
@@ -228,24 +230,25 @@ function showBookWhenclick() {
         changeLanguageWhenClick();
         generateQuoteFromJson(bookDetails.hadiths);
 
-        createTextBook([title, dataNumber, sections]);
+        let isItArabic = language.startsWith("ara");
+        let lang = isItArabic ? "ar" : "en";
+        createTextBook([title, dataNumber, sections], translations, lang);
       }
     });
   });
 }
 
-
-function createTextBook(bookData) {
+function createTextBook(bookData, translations, lang = "ar") {
   UI.articleContainer.innerHTML = "";
   let [bookName, bookNumber, sections] = bookData;
 
   let title = createElements("h1").h1;
-  title.innerHTML = bookName;
+  title.innerHTML = translations[lang].hadith.booksName[bookNumber];
   UI.articleContainer.dataset.bookNumber = bookNumber;
 
   for (let ind in sections) {
     let subTitle = createElements("h2").h2;
-    subTitle.innerHTML = sections[ind].sectionTitle;
+    subTitle.innerHTML = translations[lang].hadith.bookSections[bookName][ind];
 
     let isItNewSection = true;
     for (let i in sections[ind].content) {
@@ -330,6 +333,7 @@ function addTextToPage(pageData, elements) {
     elements.pageText.append(ayahData.text, versesNumber);
   });
 }
+
 // ok
 function createListInSidebar(obj, box, entry) {
   box.innerHTML = "";
@@ -344,8 +348,7 @@ function createListInSidebar(obj, box, entry) {
   function addElements(key, entry1, entry2, ...entry3) {
     let elements = createElements("li", "span");
     let details = obj[key][entry2] || obj[key]["name"];
-    console.log("this is key", key)
-    elements.li.dataset[entry1] = key ;
+    elements.li.dataset[entry1] = key;
     elements.li.innerHTML = obj[key][entry1];
     elements.span.innerHTML = `   (${details})`;
 
@@ -359,7 +362,12 @@ function createListInSidebar(obj, box, entry) {
 }
 
 // ok
-function createChapterBox(allChapters, isQuran) {
+function createChapterBox(allChapters, translations) {
+  let isItArabic = language.startsWith("ara");
+  let lang = isItArabic ? "ar" : "en";
+  let name = isItArabic ? "arabicname" : "name";
+
+  UI.chaptersList.innerHTML = "";
   allChapters.forEach((chapter, ind) => {
     let elements = createElements(
       "chapterBox=div",
@@ -370,14 +378,19 @@ function createChapterBox(allChapters, isQuran) {
       "h2"
     );
 
-    if (isQuran) {
-      elements.span.dataset.i18n = "ayah";
-      elements.span.innerHTML = chapter.verses.length + "اية";
+    if (isItQuran) {
+      let span = createElements("span").span;
+      span.dataset.i18n = "UI.ayah";
+      span.innerHTML = " اية";
+      elements.span.append(chapter.verses.length, span);
+      elements.h2.innerHTML = chapter[name];
+    } else {
+      elements.h2.innerHTML = translations[lang].hadith.booksName[ind];
+      elements.h2.dataset.i18n = "hadith.booksName." + ind;
     }
 
-    elements.h2.innerHTML = chapter.name;
     elements.chapterBox.className = "chapter";
-    elements.chapterBox.dataset.number = ind + 1;
+    elements.chapterBox.dataset.number = ind;
     elements.spanNum.innerHTML = ind + 1;
     elements.img.src = "./assets/images/icons/aya-num.svg";
     elements.div.append(elements.spanNum, elements.img);
@@ -392,9 +405,11 @@ function changeLanguageWhenClick(articleTitleLang) {
   languagesList.forEach((li) => {
     li.addEventListener("click", async () => {
       language = li.dataset.language;
-      console.log(language)
       direction = li.dataset.direction;
-      articleTitleLang = language.startsWith("ara") ? "arabicname" : "name";
+      let isItArabic = language.startsWith("ara");
+
+      let lang = isItArabic ? "ar" : "en";
+      articleTitleLang = isItArabic ? "arabicname" : "name";
 
       let dataDetails, textData;
 
@@ -406,17 +421,22 @@ function changeLanguageWhenClick(articleTitleLang) {
         dataDetails = hadithData.bookDetails;
         textData = dataDetails.hadiths;
       }
+      let translations = await fetchUrl("./assets/script/translations.json");
 
       UI.articleContainer.dir = direction;
       UI.quoteText.parentElement.dir = direction;
 
       activateElement(languagesList, li);
       generateQuoteFromJson(textData || dataDetails);
-      translateArticleIfExists(dataDetails, articleTitleLang);
+      translateArticleIfExists(
+        dataDetails,
+        articleTitleLang,
+        translations,
+        lang
+      );
     });
   });
 }
-
 
 function activateElement([...elements], li) {
   elements.forEach((li) => li.classList.remove("active"));
@@ -426,7 +446,6 @@ function activateElement([...elements], li) {
 
 let generateHandler = null;
 let autoGenerateHandler = null;
-
 
 async function generateQuoteFromJson(data) {
   generate(data);
@@ -481,10 +500,14 @@ async function generate(data) {
     UI.quoteText.innerHTML = textObj.hadith;
     UI.quoteDetails.innerHTML = ` ${textObj.hadithNumber} `;
   }
-
 }
 
-async function translateArticleIfExists(data, articleTitleLang) {
+async function translateArticleIfExists(
+  data,
+  articleTitleLang,
+  translations,
+  lang
+) {
   let articleChildren = UI.articleContainer.children;
   if (!articleChildren.length) return;
 
@@ -493,15 +516,13 @@ async function translateArticleIfExists(data, articleTitleLang) {
     let chapterName = data.chaptersInfo[chapterNum - 1][articleTitleLang];
     createArticle([chapterName, +chapterNum, data.chaptersInfo, data.quran]);
   } else {
-    createTextBook([
-      data.bookName,
-      data.bookNumber,
-      data.sections,
-    ]);
+    createTextBook(
+      [data.bookName, data.bookNumber, data.sections],
+      translations,
+      lang
+    );
   }
-
 }
-
 
 function createElements(...elementsName) {
   let elements = {};

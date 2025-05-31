@@ -4,8 +4,7 @@ const hadithUrl =
 
 async function hadithData(bookNumber, languageNumber) {
   let data = await fetchUrl(hadithUrl);
-
-   let bookDetails = await getBookDetails(data, bookNumber, languageNumber);
+  let bookDetails = await getBookDetails(data, bookNumber, languageNumber);
    return {
     bookDetails,
     get hadithBooks() {
@@ -16,6 +15,7 @@ async function hadithData(bookNumber, languageNumber) {
     },
   }
 }
+hadithData()
 
 function getHadithBooks(data) {
   let books = [];
@@ -29,9 +29,9 @@ function getHadithBooks(data) {
   return books;
 }
 
-function getLanguagesOfBook(data, bookNum = 1) {
+function getLanguagesOfBook(data, bookNum = 0) {
   let dataArr = Object.values(data);
-  let languages = dataArr[bookNum - 1].collection;
+  let languages = dataArr[bookNum].collection;
   let filteredLanguages = [];
   languages.forEach((details) => {
     filteredLanguages.push({
@@ -44,44 +44,11 @@ function getLanguagesOfBook(data, bookNum = 1) {
   return filteredLanguages;
 }
 
-async function getBookDetails(data, bookNumber = 1, languageNum = 1) {
+
+async function getBookDetails(data, bookNumber = 0, languageNum = 0) {
   let dataArr = Object.values(data);
-  let booklink = dataArr[bookNumber - 1].collection[languageNum - 1].linkmin;
+  let booklink = dataArr[bookNumber].collection[languageNum].linkmin;
   let bookDetails = await fetchUrl(booklink);
-
-  /*
-    basmala
-    :
-    "بِسْمِ اِ۬للَّهِ اِ۬لرَّحْمَٰنِ اِ۬لرَّحِيمِ"
-    chapterName
-    :
-    "سُوْرَةُ الْفَاتِحَةِ"
-    chapterNum
-    :
-    1
-    pages
-    :
-    {1: Array(7)}
-*/
-
-  // let data = {
-    //   chapterName: chapterName,
-    //   chapterNum: currentChapterNum,
-    //   basmala: versesData[0].text,
-    //   pages: pages,
-  // };
-
-  /*
-   pages = {
-      1 : {
-      title : bookname,
-      content : {
-        1 : [{},{}],
-        2 : [{},{}]
-       }
-      }
-   }
-  */
 
   let hadiths = bookDetails.hadiths;
   let section = bookDetails.metadata.sections;
@@ -91,7 +58,6 @@ async function getBookDetails(data, bookNumber = 1, languageNum = 1) {
 
   for (let ind in section) {
     if (ind == 0) continue;
-
     let pages = {};
     let start = sectionsDetails[ind].hadithnumber_first;
     let end = sectionsDetails[ind].hadithnumber_last;
@@ -111,7 +77,6 @@ async function getBookDetails(data, bookNumber = 1, languageNum = 1) {
     sections[ind].content = pages;
   }
 
-
   return {
     bookName: bookDetails.metadata.name,
     bookNumber,
@@ -129,8 +94,5 @@ function getRandomHadith(hadiths) {
 
 export const HadithService = {
   hadithData,
-  // getHadithBooks,
-  // getLanguagesOfBook,
-  // getBookDetails,
   getRandomHadith
 };

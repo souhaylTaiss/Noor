@@ -29,10 +29,10 @@
           <h1>NoorQuote</h1>
 
           <div class="api-btn">
-            <button type="button" value="quran" data-i18n="quranBtn">
+            <button type="button" value="quran" data-i18n="UI.quranBtn">
               القران
             </button>
-            <button type="button" value="hadith" data-i18n="hadithBtn">
+            <button type="button" value="hadith" data-i18n="UI.hadithBtn">
               الحديث
             </button>
           </div>
@@ -43,7 +43,7 @@
             </a>
             <input
               type="search"
-              data-i18n="inputSearch"
+              data-i18n="UI.inputSearch"
               placeholder="ابحث عن اية او حديث"
             />
           </div>
@@ -84,9 +84,9 @@
             <div class="shrinking-bar"><span></span></div>
           </div>
           <div class="generator">
-            <div class="btn firstBtn" data-i18n="suggestBtn">إقتراح</div>
+            <div class="btn firstBtn" data-i18n="UI.suggestBtn">إقتراح</div>
             <div class="btn lastBtn">
-              <div data-i18n="autoSuggestBtn">إقتراح آلي</div>
+              <div data-i18n="UI.autoSuggestBtn">إقتراح آلي</div>
               <span></span>
             </div>
           </div>
@@ -101,46 +101,41 @@
 
     <aside>
       <div class="title">
-        <h2 data-i18n="settings">الاعدادات</h2>
+        <h2 data-i18n="UI.settings">الاعدادات</h2>
         <div class="close-btn">
           <img src="./assets/images/icons/close-icon.svg" alt="" />
         </div>
       </div>
       <div class="box">
-        <h3 data-i18n="websiteLanguage">لغة الموقع</h3>
+        <h3 data-i18n="UI.websiteLanguage">لغة الموقع</h3>
         <hr />
         <ul class="website-language-box">
-          <li data-lang="ar" class="active">Arabic</li>
-          <li data-lang="en">English</li>
+          <li data-lang="ar" data-dir="rtl" class="active">Arabic</li>
+          <li data-lang="en" data-dir="ltr">English</li>
         </ul>
       </div>
       <div class="box">
-        <h3 data-i18n="fontSize">حجم الخط</h3>
-        <hr />
-        <span>1</span>
-        <input
-          type="range"
-          name="font-size"
-          id="font-size"
-          min="22"
-          max="35"
-          value="22"
-        />
-        <span>26</span>
+        <h3 data-i18n="UI.fontSize">حجم الخط</h3>
+        <hr/>
+        <div class="font-size-range">
+          <div class="increase"></div>
+          <span class="value">1</span>
+          <div class="reduce"></div>
+        </div>
       </div>
       <div class="box">
-        <h3 data-i18n="languages">اللغات</h3>
-        <hr />
+        <h3 data-i18n="UI.languages">اللغات</h3>
+        <hr/>
         <ul class="language-box"></ul>
       </div>
       <div class="box">
-        <h3 data-i18n="fontsFamily">الخطوط</h3>
-        <hr />
+        <h3 data-i18n="UI.fontsFamily">الخطوط</h3>
+        <hr/>
         <ul class="fonts-box"></ul>
       </div>
     </aside>
 
-    <footer>
+    <footer >
       <p></p>
     </footer>
     <div class="overlay"></div>

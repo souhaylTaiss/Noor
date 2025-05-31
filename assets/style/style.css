@@ -222,6 +222,10 @@ nav .container .menu {
 article {
   margin-top: 20px;
   font-size: 24px;
+  overflow: hidden;
+}
+article .container {
+  transform-origin: top;
 }
 article .page .title-box {
   margin-bottom: 33px;
@@ -275,6 +279,7 @@ main .quote {
   font-size: 22px;
   margin: 20px 0;
   position: relative;
+  overflow-y: scroll;
 }
 
 .quote p {
@@ -285,6 +290,20 @@ main .quote {
   transform: translate(50%, -50%);
 }
 
+/* Scrollbar Track */
+.quote::-webkit-scrollbar {
+  width: 4px; /* For vertical scrollbar */
+}
+
+/* Scrollbar Thumb */
+.quote::-webkit-scrollbar-thumb {
+  background: #00796b;
+}
+
+/* Scrollbar Track background */
+.quote::-webkit-scrollbar-track {
+  background: transparent;
+}
 .quote div {
   font-size: 17px;
   color: rgb(137, 137, 136);
@@ -496,19 +515,54 @@ aside .box {
   padding: 10px;
   margin-bottom: 20px;
 }
-aside .box input {
-  width: 90%;
-  height: 4px;
-  margin: 0 auto;
-  display: inline-block;
+.font-size-range {
+  display: flex;
+  justify-content: space-between;
 }
-aside .box span {
+.font-size-range > span {
+  font-size: 36px;
+  color: #323232;
+}
+.font-size-range div {
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  background-color: #d0cccc;
+  position: relative;
+  cursor: pointer;
+  transition: 0.3s;
+}
+.font-size-range div:hover {
+  background-color: #009688;
+}
+.font-size-range div::before,
+.increase::after {
+  content: "";
+  display: block;
+  width: 24px;
+  height: 2px;
+  background-color: rgb(42, 42, 42);
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  transition: 0.3s;
+}
+.font-size-range .increase::after {
+  transform: rotate(-90deg) translate(1px, -12px);
+}
+.font-size-range div:hover::before,
+div:hover::after {
+  background-color: white;
+}
+aside .box > span {
   font-size: 14px;
   color: #5b5b5b;
 }
 aside .box h3 {
-  font-size: 20px;
+  font-size: 25px;
   padding: 10px 0;
+  text-align: center;
 }
 aside .box hr {
   border: none;

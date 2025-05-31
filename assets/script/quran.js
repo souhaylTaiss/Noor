@@ -18,9 +18,7 @@ const filteredLanguages = async () => {
 
 // return quran by language and information about quran
 async function getQuranByLang(language) {
-  console.log(language)
   const chaptersInfo = (await fetchUrl(quranInfoUrl)).chapters;
-
   const jsonData = await filteredLanguages();
   const languageUrl = jsonData[language].linkmin;
   const quran = (await fetchUrl(languageUrl)).quran;
@@ -63,8 +61,8 @@ function getRandomVerse({quran:verses, chaptersInfo, language}) {
 
 function formatChapterPages(chapterData) {
   let [chapterName, currentChapterNum, chaptersInfo, versesData] = chapterData;
-  let versesInfo = chaptersInfo[currentChapterNum - 1].verses;
-  let chapterDetails = getChapterData(versesData, +currentChapterNum);
+  let versesInfo = chaptersInfo[+currentChapterNum - 1].verses;
+  let chapterDetails = getChapterData(versesData, +currentChapterNum );
   let pages = getPageNumberAndText(chapterDetails, versesInfo);
 
   let data = {
@@ -97,7 +95,6 @@ function getPageNumberAndText(chapterDetails, versesInfo) {
     }
     textData.push(chapterDetails[ind]);
   });
-
   pages[pageCounter] = textData;
   return pages;
 }
