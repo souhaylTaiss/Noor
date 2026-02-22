@@ -2,10 +2,10 @@
   "short_name": "Noor",
   "name": "Noor",
   "description": "Noor Quran and Hadith app.",
-  "start_url": "/souhayltaiss.github.io/",
+  "start_url": "./",
   "display": "standalone",
   "orientation": "any",
-  "scope": "/souhayltaiss.github.io/",
+  "scope": "./",
   "theme_color": "black",
   "background_color": "white",
   "icons": [
