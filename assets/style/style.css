@@ -1,6 +1,7 @@
 @font-face {
   font-family: "default";
-  src: url("https://cdn.jsdelivr.net/gh/fawazahmed0/quran-api@1/fonts/amiri-bold1.woff2")
+  src:
+    url("https://cdn.jsdelivr.net/gh/fawazahmed0/quran-api@1/fonts/amiri-bold1.woff2")
       format("woff2"),
     url("https://cdn.jsdelivr.net/gh/fawazahmed0/quran-api@1/fonts/amiri-bold1.woff")
       format("woff");
@@ -23,6 +24,50 @@ body {
   font-family: "default", sans-serif;
   line-height: 2;
 }
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.7);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.2;
+  }
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  inset: 0;
+  z-index: 9999;
+}
+/* .loading.active {
+  display: flex;
+} */
+.load-page {
+  width: 100vw;
+  height: 100vh;
+  background-color: white;
+}
+
+.loading-ring {
+  position: relative;
+  width: 50px;
+  height: 50px;
+}
+
+.loading-ring::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  animation: pulse-ring 0.8s ease-out infinite alternate;
+  border: 4px solid rgb(0, 227, 11);
+}
+
 .overlay {
   width: 100%;
   height: 100vh;
@@ -80,16 +125,20 @@ a {
 @media (width < 480px) {
   .container {
     max-width: 100%;
-    padding: 0 5px;
+    padding: 0 10px;
   }
 }
 
+header {
+  margin-bottom: 90px;
+}
 nav {
   width: 100%;
-  background-color: #013832;
+  background-color: #fff;
   position: fixed;
   top: 0;
-  z-index: 9999;
+  z-index: 999;
+  box-shadow: 0 1px 15px rgb(34 34 34 / 37%);
 }
 nav .container {
   height: 60px;
@@ -97,127 +146,30 @@ nav .container {
   justify-content: space-between;
   align-items: center;
 }
-nav .container > div:first-child {
+nav .container > ul {
   display: flex;
   align-items: center;
   gap: 10px;
 }
-nav .container .menu {
+nav .container > ul li {
   cursor: pointer;
+      font-size: 23px;
 }
 
-.hero-section {
-  backdrop-filter: blur(2px);
-  background-color: rgba(255, 255, 255, 0.07);
-  box-shadow: 0 6px 26px #00000026;
-  margin-top: 60px;
-  transition: 0.3s;
-}
-.hero-section.sticky {
-  position: fixed;
-  top: 0px;
-  width: 100%;
-  z-index: 999;
-}
-
-.hero-section .container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding-bottom: 15px;
-}
-.hero-section.sticky .container {
-  display: flex;
-  flex-direction: row-reverse;
-  align-items: center;
-  gap: 12px;
-  justify-content: center;
-  padding: 10px 0;
-}
-
-.hero-section .container h1 {
-  color: white;
-}
-.hero-section.sticky .container h1 {
-  display: none;
-}
-.hero-section .container .api-btn {
-  margin-top: 12px;
-}
-.hero-section .container .api-btn button {
-  height: 34px;
-  width: 88px;
-  background-color: white;
-  border-radius: 16px;
-  padding: 5px 15px;
-  font-size: 20px;
+nav .container button {
+  font-size: 23px;
   transition: 0.3s;
   margin: 0 3px;
+  background-color: transparent;
   cursor: pointer;
 }
-.hero-section.sticky .container .api-btn button {
-  display: none;
+nav .container ul button.active, .home.active {
+  color: #009688;
 }
-.hero-section .container .api-btn button:hover {
-  background-color: #009688;
-  color: white;
+nav .container ul button:hover,.home:hover {
+  color: #009688;
 }
-.hero-section .container .input-group {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: 20px;
-}
-.hero-section .container .input-group input[type="search"] {
-  height: 38px;
-  width: 496px;
-  border-radius: 44px;
-  padding: 10px 15px;
-}
-.hero-section.sticky .container .input-group input[type="search"] {
-  width: 224px;
-  margin-top: 0;
-}
-.hero-section .container .search {
-  display: flex;
-  display: none;
-  gap: 18px;
-  margin-top: 15px;
-  margin-bottom: 25px;
-}
-.hero-section.sticky .container .search {
-  margin-top: 0;
-  margin-bottom: 0;
-}
-.hero-section.sticky .container .api-btn {
-  margin-top: 0;
-  margin-bottom: 0;
-}
-.hero-section .container .search .quran {
-  height: 38px;
-  cursor: pointer;
-}
-.hero-section .container .search .input-group {
-  position: relative;
-}
-.hero-section .container .search input {
-  height: 38px;
-  width: 205px;
-  background-color: white;
-  border-radius: 16px;
-  padding: 0 15px;
-  font-size: 22px;
-}
-.hero-section .container .search .input-group span {
-  position: absolute;
-  left: 5px;
-  top: 4px;
-  cursor: pointer;
-}
-.hero-section .container .search .input-group span img {
-  transform: rotate(180deg);
-  transform-origin: center;
-}
+
 /* Article */
 article {
   margin-top: 20px;
@@ -225,28 +177,42 @@ article {
   overflow: hidden;
 }
 article .container {
-  transform-origin: top;
+  max-width: 1000px;
+}
+article .page {
+  width: 100%;
+  background-color: white;
+  border-radius: 3px;
+  padding: clamp(10px, 7vw, 60px);
+  margin: 30px auto;
+  text-align: justify;
+  line-height: 2;
+  position: relative;
+}
+article .page:first-child div:first-child {
+  text-align: center;
+  margin-bottom: 35px;
+}
+article .page:first-child div:first-child h3 {
+  color: #222;
 }
 article .page .title-box {
   margin-bottom: 33px;
   text-align: center;
 }
-article .page .title-box h2 {
+/* article .page .title-box h2 {
   transform: translateY(-26px);
-}
-article .page {
-  max-width: 570px;
-  width: 100%;
-  background-color: white;
-  border-radius: 3px;
-  padding: 80px;
-  margin: 30px auto;
+} */
+article .page h3 {
   text-align: center;
-  line-height: 2;
-  position: relative;
 }
 article .page > p {
   text-align: justify;
+}
+article .page p p {
+  text-align: end;
+  color: gray;
+  transform: translateY(-13px);
 }
 article .page > p .verse-number {
   background-image: url("../images/icons/verseIcon.svg");
@@ -264,30 +230,32 @@ article .page > p .verse-number {
 }
 article .page .page-number {
   position: absolute;
-  bottom: 10px;
+  bottom: -3px;
+  left: 0;
   font-size: 25px;
   color: #646363;
   text-align: center;
+  width: 100%;
 }
 
 /* Quote generator */
+main.hidden {
+  overflow: hidden;
+  width: 0;
+  height: 0;
+}
+
 main .quote {
   background-color: white;
-  min-height: 390px;
+  min-height: 160px;
   padding: 28px;
-  border-radius: 30px;
+  border-radius: 10px;
   font-size: 22px;
-  margin: 20px 0;
-  position: relative;
-  overflow-y: scroll;
+  margin-bottom: 20px;
 }
 
 .quote p {
-  width: 80%;
-  position: absolute;
-  right: 50%;
-  top: 50%;
-  transform: translate(50%, -50%);
+  transition: opacity 0.3s ease;
 }
 
 /* Scrollbar Track */
@@ -304,34 +272,66 @@ main .quote {
 .quote::-webkit-scrollbar-track {
   background: transparent;
 }
-.quote div {
+.quote > div:first-of-type {
   font-size: 17px;
   color: rgb(137, 137, 136);
-  position: absolute;
   left: 0px;
-  padding: 0 30px;
   bottom: 36px;
-  width: 100%;
   display: flex;
   flex-direction: row-reverse;
+  transition: opacity 0.3s ease;
+}
+@property --percent {
+  syntax: "<percentage>";
+  initial-value: 0%;
+  inherits: false;
+}
+@property --seconds {
+  syntax: "<time>";
+  initial-value: 5s;
+  inherits: false;
 }
 .quote .shrinking-bar {
-  width: 94%;
-  height: 4px;
+  width: 45px;
+  height: 45px;
+  background-color: #ddd;
+  background-image: conic-gradient(
+    #04d600,
+    #04d600 var(--percent),
+    transparent var(--percent)
+  );
   position: absolute;
-  left: 50%;
-  bottom: 0;
-  transform: translateX(-50%);
+  right: 5px;
+  bottom: 5px;
+  border-radius: 50%;
+  padding: 5px;
+  opacity: 0;
 }
-.quote .shrinking-bar span {
-  width: 100%;
-  height: 4px;
-  background: linear-gradient(90deg, #4db6ac, #00695c);
-  border-radius: 10px;
-  display: block;
-  transition: 5s;
-  transition-timing-function: linear;
+
+.quote .shrinking-bar.running {
+  animation: timer var(--seconds) infinite linear;
+  opacity: 1;
 }
+
+@keyframes timer {
+  to {
+    --percent: 100%;
+  }
+}
+
+.quote .shrinking-bar .circle {
+  width: 35px;
+  height: 35px;
+  background: white;
+  position: relative;
+  border-radius: 50%;
+  font-size: 17px;
+  color: #939393;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .quote-generator .generator {
   width: fit-content;
   margin: 0 auto;
@@ -341,11 +341,11 @@ main .quote {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 140px;
+  min-width: 100px;
   background-color: white;
-  border-radius: 20px;
-  padding: 0px 20px;
-  font-size: 20px;
+  border-radius: 10px;
+  padding: 2px 6px;
+  font-size: 18px;
   transition: 0.3s;
   margin: 0 3px;
   cursor: pointer;
@@ -360,7 +360,7 @@ main .quote {
   margin: 0;
 }
 .quote-generator .generator .btn span {
-  transform: translate(-17px, 0px);
+  margin-right: 4px;
   background-image: url(../images/icons/play-circle.svg);
   background-repeat: no-repeat;
   width: 34px;
@@ -379,19 +379,18 @@ main .quote {
 
 /* Quran chapters-container */
 .chapters-container {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(225px, 1fr));
   margin-top: 30px;
   gap: 15px;
 }
 .chapters-container .chapter {
-  width: 277px;
   height: 80px;
   padding: 12px;
   border-radius: 10px;
   background-color: white;
   display: flex;
-  align-items: self-start;
+  align-items: center;
   cursor: pointer;
   transition: 0.3s;
   position: relative;
@@ -399,14 +398,20 @@ main .quote {
 .chapters-container .chapter:hover {
   background-color: #00897b;
   transform: translateY(-5px);
-  box-shadow: 4px 4px 12px rgba(126, 126, 126, 0.597),
+  box-shadow:
+    4px 4px 12px rgba(126, 126, 126, 0.597),
     -4px -4px 12px rgba(126, 126, 126, 0.597);
 }
 .chapters-container .chapter h2 {
-  font-size: 25px;
+  min-height: 29px;
+  font-size: clamp(20px, 2vw, 25px);
   font-weight: normal;
   padding: 0 10px;
-  transform: translateY(6px);
+  line-height: 1;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 .chapters-container .chapter:hover h2 {
   color: white;
@@ -415,13 +420,14 @@ main .quote {
   color: gray;
   position: absolute;
   left: 13px;
-  bottom: 24px;
+  bottom: 0;
 }
 .chapters-container .chapter:hover span {
   color: white;
 }
 .chapters-container .chapter div {
   position: relative;
+  line-height: 1;
 }
 .chapters-container .chapter div span {
   position: absolute;
@@ -438,54 +444,50 @@ main .quote {
 /* Sidebar */
 aside {
   position: fixed;
-  right: -400px;
   top: 0;
-  width: 400px;
+  width: min(100%, 400px);
   height: 100%;
   backdrop-filter: blur(12px);
   background: linear-gradient(#a1a0a06b);
-  padding: 30px;
   transition: 0.3s;
-  direction: ltr;
   z-index: 9999;
-  overflow: hidden scroll;
+  box-shadow:
+    0px 10px #2222225c,
+    -4px 0 10px #2222225c;
+  overflow: hidden auto;
+}
+aside.settings {
+  right: -400px;
 }
 
 /* Scrollbar Track */
-aside::-webkit-scrollbar {
-  width: 3px; /* For vertical scrollbar */
+aside.settings::-webkit-scrollbar {
+  width: 0px; /* For vertical scrollbar */
 }
 
-/* Scrollbar Thumb */
-aside::-webkit-scrollbar-thumb {
-  background: #464849;
-}
-
-/* Scrollbar Track background */
-aside::-webkit-scrollbar-track {
-  background: #bbb8b8;
-}
 aside.active {
   right: 0;
 }
 aside .title {
+  width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
   position: sticky;
   top: 0;
-  width: 400px;
   height: 61px;
-  transform: translate(-30px, -31px);
   padding: 0 30px;
   z-index: 9999;
-  background: #013832;
+  background: white;
+  box-shadow: 0 2px 10px #1414144a;
+}
+aside > div:last-child {
+  padding: 15px;
 }
 aside .title.direction {
   flex-direction: row-reverse;
 }
 aside .title h2 {
-  color: white;
   padding: 5px 0;
   font-size: 34px;
 }
@@ -498,7 +500,7 @@ aside .title .close-btn {
   border-radius: 3px;
 }
 aside .title .close-btn:hover {
-  background: red;
+  background: rgb(240, 72, 72);
 }
 aside .title .close-btn img {
   width: 100%;
@@ -513,7 +515,7 @@ aside .box {
   background-color: white;
   border-radius: 4px;
   padding: 10px;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
 }
 .font-size-range {
   display: flex;
@@ -571,7 +573,7 @@ aside .box hr {
   margin-top: 5px;
   margin-bottom: 15px;
 }
-aside .box ul {
+aside.settings .box ul {
   overflow-y: scroll;
   height: 160px;
   direction: ltr;
@@ -580,29 +582,30 @@ aside .box ul {
   scroll-behavior: smooth;
 }
 
-aside .box .website-language-box {
+aside.settings .box .website-language-box {
   height: auto;
   display: flex;
   justify-content: center;
   gap: 10px;
 }
-aside .box .website-language-box li {
+
+aside.settings .box .website-language-box li {
   padding: 8px 22px;
   text-align: end;
   font-size: 18px;
 }
 /* Scrollbar Track */
-aside .box ul::-webkit-scrollbar {
+aside.scroll .box ul::-webkit-scrollbar {
   width: 3px; /* For vertical scrollbar */
 }
 
 /* Scrollbar Thumb */
-aside .box ul::-webkit-scrollbar-thumb {
+aside.scroll .box ul::-webkit-scrollbar-thumb {
   background: #118be6;
 }
 
 /* Scrollbar Track background */
-aside .box ul::-webkit-scrollbar-track {
+aside.scroll .box ul::-webkit-scrollbar-track {
   background: #e3e1e1;
 }
 aside .box ul li {
@@ -613,6 +616,11 @@ aside .box ul li {
   cursor: pointer;
   transition: 0.3s;
 }
+aside .box ul p {
+  font-size: 18px;
+  color: #7a7a7a;
+  text-align: center;
+}
 aside .box ul li span {
   color: rgb(153, 152, 152);
   font-size: 12px;
@@ -621,10 +629,90 @@ aside .box ul li:hover {
   background-color: #26a69a;
   color: white;
   transform: translateZ(12px);
-  box-shadow: 2px 2px 12px rgba(180, 179, 179, 0.597),
+  box-shadow:
+    2px 2px 12px rgba(180, 179, 179, 0.597),
     -2px -2px 12px rgba(176, 175, 175, 0.597);
 }
 aside .box ul li.active {
   background-color: #00897b;
   color: white;
+}
+
+/* Second aside */
+aside.book-details {
+  right: auto;
+  left: -400px;
+  direction: rtl;
+}
+aside.book-details.active {
+  left: 0px;
+}
+.book-details .book-detail-selectors {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(55px, 1fr));
+  text-align: center;
+}
+
+.book-details .book-detail-selectors li {
+  margin-bottom: 0;
+}
+.book-details .details {
+  height: 414px;
+  margin-bottom: 0;
+  padding: 10px 0;
+  display: flex;
+}
+.book-details .details .no-result-msg {
+  display: block;
+  inset: 0;
+  margin: auto;
+  position: absolute;
+  width: fit-content;
+  height: fit-content;
+  font-size: 24px;
+  color: gray;
+}
+.book-details .details ul {
+  overflow-y: scroll;
+  height: 100%;
+  padding: 0 10px;
+  position: relative;
+  scroll-behavior: smooth;
+  min-width: 70px;
+}
+.book-details .details ul li span {
+  font-size: initial;
+  color: initial;
+  background-color: yellow;
+}
+.book-details .details ul {
+  overflow-y: scroll;
+  height: 100%;
+  padding: 0 10px;
+  position: relative;
+  scroll-behavior: smooth;
+}
+.book-details .search-field input {
+  height: 38px;
+  width: 100%;
+  border-radius: 4px;
+  padding: 10px 15px;
+}
+.book-details .search-field input:last-child {
+  margin: 10px 0 15px;
+  transition: 0.3s;
+}
+.book-details .search-field input:last-child.hidden {
+  height: 0;
+  padding: 0;
+  margin: 0;
+}
+
+footer {
+  background: #2c2c2c;
+  color: white;
+  text-align: center;
+  padding: 20px;
+  margin-top: 40px;
 }

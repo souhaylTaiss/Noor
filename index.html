@@ -1,20 +1,43 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ar" dir="rtl">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="./assets/style/style.css" />
-    <title>Random text generator</title>
+    <link rel="manifest" href="manifest.json" />
+    <link
+      rel="shortcut icon"
+      href="./assets/images/icons/icon-512x512.jpg"
+      type="image/jpg"
+    />
+    <title>Noor | Quran and Hadith</title>
   </head>
+
   <body>
     <header>
       <nav>
         <div class="container">
-          <div>
-            <div class="menu">
-              <img src="./assets/images/icons/menu.svg" alt="" />
-            </div>
-          </div>
+          <ul>
+            <li class="menu">
+              <img src="./assets/images/icons/menu.svg" alt="menu" />
+            </li>
+            <li class="search-btn">
+              <img src="./assets/images/icons/search.svg" alt="search" />
+            </li>
+            <li class="home">
+              <img src="./assets/images/icons/book.svg" alt="books-icon" />
+            </li>
+            <li>
+              <button type="button" value="quran" data-i18n="UI.quranBtn">
+                القران
+              </button>
+            </li>
+            <li>
+              <button type="button" value="hadith" data-i18n="UI.hadithBtn">
+                الحديث
+              </button>
+            </li>
+          </ul>
           <div>
             <a href="index.html"
               ><img src="./assets/images/icons/logo.svg" alt=""
@@ -22,53 +45,6 @@
           </div>
         </div>
       </nav>
-
-      <div class="hero-section">
-        <div class="container">
-          <!-- <div class="blur-overlay"></div> -->
-          <h1>NoorQuote</h1>
-
-          <div class="api-btn">
-            <button type="button" value="quran" data-i18n="UI.quranBtn">
-              القران
-            </button>
-            <button type="button" value="hadith" data-i18n="UI.hadithBtn">
-              الحديث
-            </button>
-          </div>
-
-          <div class="input-group">
-            <a href="#chapters-container" class="quran">
-              <img src="./assets/images/icons/book.svg" alt="" />
-            </a>
-            <input
-              type="search"
-              data-i18n="UI.inputSearch"
-              placeholder="ابحث عن اية او حديث"
-            />
-          </div>
-
-          <div class="search">
-            <div class="input-group">
-              <input
-                type="text"
-                id="chapter"
-                name="chapter"
-                placeholder="الفاتحة"
-              />
-              <span class="icon"
-                ><img src="./assets/images/icons/arrow-down.svg" alt=""
-              /></span>
-            </div>
-            <div class="input-group">
-              <input type="text" id="aya" name="aya" placeholder="اية" />
-              <span class="icon"
-                ><img src="./assets/images/icons/arrow-down.svg" alt=""
-              /></span>
-            </div>
-          </div>
-        </div>
-      </div>
     </header>
 
     <article>
@@ -81,8 +57,9 @@
           <div class="quote font-size">
             <p></p>
             <div><span></span> <span></span></div>
-            <div class="shrinking-bar"><span></span></div>
+            <div class="shrinking-bar"><div class="circle"></div></div>
           </div>
+
           <div class="generator">
             <div class="btn firstBtn" data-i18n="UI.suggestBtn">إقتراح</div>
             <div class="btn lastBtn">
@@ -99,50 +76,96 @@
       </div>
     </main>
 
-    <aside>
+    <aside class="settings scroll">
       <div class="title">
         <h2 data-i18n="UI.settings">الاعدادات</h2>
         <div class="close-btn">
           <img src="./assets/images/icons/close-icon.svg" alt="" />
         </div>
       </div>
-      <div class="box">
-        <h3 data-i18n="UI.websiteLanguage">لغة الموقع</h3>
-        <hr />
-        <ul class="website-language-box">
-          <li data-lang="ar" data-dir="rtl" class="active">Arabic</li>
-          <li data-lang="en" data-dir="ltr">English</li>
-        </ul>
-      </div>
-      <div class="box">
-        <h3 data-i18n="UI.fontSize">حجم الخط</h3>
-        <hr/>
-        <div class="font-size-range">
-          <div class="increase"></div>
-          <span class="value">1</span>
-          <div class="reduce"></div>
+
+      <div>
+        <div class="box">
+          <h3 data-i18n="UI.websiteLanguage">لغة الموقع</h3>
+          <hr />
+          <ul class="website-language-box">
+            <li data-lang="ar" data-dir="rtl" class="active">Arabic</li>
+            <li data-lang="en" data-dir="ltr">English</li>
+          </ul>
         </div>
-      </div>
-      <div class="box">
-        <h3 data-i18n="UI.languages">اللغات</h3>
-        <hr/>
-        <ul class="language-box"></ul>
-      </div>
-      <div class="box">
-        <h3 data-i18n="UI.fontsFamily">الخطوط</h3>
-        <hr/>
-        <ul class="fonts-box"></ul>
+
+        <div class="box">
+          <h3 data-i18n="UI.fontSize">حجم الخط</h3>
+          <hr />
+          <div class="font-size-range">
+            <div class="increase"></div>
+            <span class="value">1</span>
+            <div class="reduce"></div>
+          </div>
+        </div>
+
+        <div class="box">
+          <h3 data-i18n="UI.languages">اللغات</h3>
+          <hr />
+          <ul class="language-box">
+            <span>No book choose yet!</span>
+          </ul>
+        </div>
+
+        <div class="box">
+          <h3 data-i18n="UI.fontsFamily">الخطوط</h3>
+          <hr />
+          <ul class="fonts-box"></ul>
+        </div>
       </div>
     </aside>
 
-    <footer >
-      <p></p>
+    <aside class="book-details scroll">
+      <div class="title">
+        <h2 data-i18n="UI.search">بحث</h2>
+        <div class="close-btn">
+          <img src="./assets/images/icons/close-icon.svg" alt="" />
+        </div>
+      </div>
+
+      <div class="book-info-container">
+        <div class="box">
+          <ul class="book-detail-selectors"></ul>
+        </div>
+
+        <div class="search-field">
+          <input type="search" name="search" placeholder="بحث" />
+          <input class="hidden" type="search" name="search" placeholder="بحث" />
+        </div>
+
+        <div class="box details">
+          <ul></ul>
+        </div>
+      </div>
+    </aside>
+
+    <footer>
+      <p>Copyright Souhayl Taiss &copy; 2026</p>
     </footer>
     <div class="overlay"></div>
-    <script type="module" src="./assets/script/main.js" ></script>
-    <script type="module" src="./assets/script/quran.js" ></script>
-    <script type="module" src="./assets/script/hadith.js" ></script>
-    <!-- <script type="module" src="./assets/script/fonts.js" ></script> -->
-    <script type="module" src="./assets/script/utils.js" ></script>
+    <script type="module" src="./assets/script/main.js"></script>
+    <script type="module" src="./assets/script/quran.js"></script>
+    <script type="module" src="./assets/script/hadith.js"></script>
+    <script type="module" src="./assets/script/fonts.js"></script>
+    <script type="module" src="./assets/script/utils.js"></script>
+
+    <!--  Register Server Worker  -->
+    <script>
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker
+          .register("./sw.js")
+          .then((reg) => {
+            console.log(reg);
+          })
+          .catch((err) => {
+            console.log("Error:", err);
+          });
+      }
+    </script>
   </body>
 </html>

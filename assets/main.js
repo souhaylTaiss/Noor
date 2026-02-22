@@ -106,6 +106,7 @@ async function getHadith() {
 
 }
 getHadith()
+
 // Change language
 
 UI.websiteLanguagesList.forEach((btn) => {

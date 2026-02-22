@@ -2,20 +2,23 @@ import { fetchUrl } from "../script/utils.js";
 const hadithUrl =
   "https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions.min.json";
 
-async function hadithData(bookNumber, languageNumber) {
+async function hadithData(bookNumber = 0, lang) {
+  bookNumber--;
   let data = await fetchUrl(hadithUrl);
-  let bookDetails = await getBookDetails(data, bookNumber, languageNumber);
+  let bookDetails = await getBookDetails(bookNumber, lang);
+  let dataArr = Object.values(data);
+
    return {
     bookDetails,
+    dataArr,
     get hadithBooks() {
-      return getHadithBooks(data)
+      return getHadithBooks(data);
     },
     get languagesOfBook() {
-      return getLanguagesOfBook(data,bookNumber)
+      return getLanguagesOfBook(dataArr,bookNumber);
     },
   }
 }
-hadithData()
 
 function getHadithBooks(data) {
   let books = [];
@@ -26,12 +29,12 @@ function getHadithBooks(data) {
       link: data[ind].collection[0].linkmin,
     });
   }
+
   return books;
 }
 
-function getLanguagesOfBook(data, bookNum = 0) {
-  let dataArr = Object.values(data);
-  let languages = dataArr[bookNum].collection;
+function getLanguagesOfBook(data, bookNum) {
+  let languages = data[bookNum].collection;
   let filteredLanguages = [];
   languages.forEach((details) => {
     filteredLanguages.push({
@@ -41,28 +44,27 @@ function getLanguagesOfBook(data, bookNum = 0) {
       name: details.name,
     });
   });
+
   return filteredLanguages;
 }
 
-
-async function getBookDetails(data, bookNumber = 0, languageNum = 0) {
-  let dataArr = Object.values(data);
-  let booklink = dataArr[bookNumber].collection[languageNum].linkmin;
-  let bookDetails = await fetchUrl(booklink);
+async function getBookDetails(bookNumber, language ) {
+  let bookDetails = await getSpecificPart(language);
+  let isArabicLang = language.toLowerCase().startsWith("ara");
 
   let hadiths = bookDetails.hadiths;
   let section = bookDetails.metadata.sections;
   let sectionsDetails = bookDetails.metadata.section_details;
-  let sections = {}
+  let sections = {};
   let counter = 1;
 
   for (let ind in section) {
     if (ind == 0) continue;
     let pages = {};
     let start = sectionsDetails[ind].hadithnumber_first;
-    let end = sectionsDetails[ind].hadithnumber_last;
+    let end = sectionsDetails[ind].hadithnumber_last + 1;
 
-    sections[ind] = {}
+    sections[ind] = {};
     sections[ind].sectionTitle = section[ind];
 
     let arr = [];
@@ -70,7 +72,7 @@ async function getBookDetails(data, bookNumber = 0, languageNum = 0) {
       if (arr.length === 3) {
         pages[counter] = arr;
         arr = [];
-        counter++
+        counter++;
       }
       arr.push(hadiths[i - 1]);
     }
@@ -81,7 +83,8 @@ async function getBookDetails(data, bookNumber = 0, languageNum = 0) {
     bookName: bookDetails.metadata.name,
     bookNumber,
     sections,
-    hadiths
+    hadiths,
+    isArabicLang
   };
 }
 
@@ -92,7 +95,17 @@ function getRandomHadith(hadiths) {
   return {hadith, hadithNumber};
 }
 
+
+async function getSpecificPart(language, part, number) {
+  language = "/" + language;
+  part = part? "/" + part: "";
+  number = number? "/" + number: "";
+  const link = `https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions${language}${part}${number}.min.json`;
+  return await fetchUrl(link);
+}
+
 export const HadithService = {
   hadithData,
-  getRandomHadith
+  getRandomHadith,
+  getSpecificPart
 };
