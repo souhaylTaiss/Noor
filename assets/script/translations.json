@@ -12,7 +12,9 @@
       "languages": "لغات الكتاب",
       "fontsFamily": "الخطوط",
       "websiteLanguage": "لغة الموقع",
-      "search": "بحث"
+      "search": "بحث",
+      "books": "الكتب",
+      "download": "تحميل"
     },
     "hadith": {
       "booksName": {
@@ -462,7 +464,9 @@
       "languages": "Book Languages",
       "fontsFamily": "Fonts",
       "websiteLanguage": "Website language",
-      "search": "Search"
+      "search": "Search",
+      "books": "Books",
+      "download": "Download"
     },
     "hadith": {
       "booksName": {

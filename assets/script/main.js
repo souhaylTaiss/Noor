@@ -50,6 +50,11 @@ const UI = {
   pausePlayIcon: document.querySelector(".btn span"),
   articleContainer: document.querySelector("article .container"),
   loading: document.querySelector(".loading"),
+  scrollTopBtn: document.querySelector(".scroll-top"),
+  downloadBtn: document.querySelector("[value='download'"),
+  navbar: document.querySelector("nav .container"),
+  menuContainer: document.querySelector("nav .container ul:first-child"),
+  subMenu: document.querySelector("nav .container ul ul")
 };
 /* ==================== App State & Config ==================== */
 let body = document.querySelector("body");
@@ -131,7 +136,6 @@ async function hideLoading(target) {
 }
 
 const scrollToTop = () => window.scrollTo(0, 0);
-
 
 async function translateArticleIfExists(data, articleTitleLang, translations) {
   const articleChildren = UI.articleContainer.hasChildNodes();
@@ -225,7 +229,6 @@ function createListInSidebar(obj, box, entry, checkBook = false) {
 }
 
 /* ==================== Initialization ==================== */
-let elementsReady;
 async function initApp(btn, data, dataInfo, dataLanguages, checkLang) {
   UI.articleContainer.innerHTML = "";
   UI.searchResultBox.innerHTML = "";
@@ -243,7 +246,7 @@ async function initApp(btn, data, dataInfo, dataLanguages, checkLang) {
     checkLang,
   );
 
-  elementsReady = createChapterBox(dataInfo, translations);
+  createChapterBox(dataInfo, translations);
   generateQuoteFromJson(data, translations);
 
   if (appState.isItQuran) {
@@ -261,15 +264,35 @@ function setupEventListeners() {
     UI.rightSidebar.classList.add("active"),
   );
 
+  // Show download app prompt
+  let deferredPrompt;
+  window.addEventListener("beforeinstallprompt", (e) => {
+    UI.downloadBtn.style.display = "block";
+    deferredPrompt = e;
+  });
+
+  // Hide button if app are installed
+  UI.downloadBtn.addEventListener("click", async () => {
+    if (!deferredPrompt) return;
+
+    deferredPrompt.prompt();
+
+    let choiceResult = await deferredPrompt.choiceResult;
+    if (choiceResult !== "accepted") return;
+
+    deferredPrompt = null;
+    UI.downloadBtn.style.display = "none";
+  });
+
   UI.searchBtn.addEventListener("click", () =>
     UI.leftSidebar.classList.add("active"),
   );
 
   UI.home.addEventListener("click", () => {
-    scrollToTop()
+    scrollToTop();
     UI.articleContainer.innerHTML = "";
     UI.main.classList.remove("hidden");
-  })
+  });
 
   UI.rightCloseBtn.addEventListener("click", () =>
     UI.rightSidebar.classList.remove("active"),
@@ -278,6 +301,17 @@ function setupEventListeners() {
   UI.leftCloseBtn.addEventListener("click", () =>
     UI.leftSidebar.classList.remove("active"),
   );
+
+  UI.searchResultBox.addEventListener("click", () => {
+    let selector = document.querySelector(".book-detail-selectors .active");
+    let engName = selector.dataset.engName;
+
+    const hasSubMenu =
+      engName == "verses" || engName == "sections" || engName == "Hadiths";
+
+    if (hasSubMenu) return;
+    UI.rightSidebar.classList.remove("active");
+  });
 
   UI.siteLangAr.addEventListener("click", () => handleSiteLang(UI.siteLangAr));
   UI.siteLangEn.addEventListener("click", () => handleSiteLang(UI.siteLangEn));
@@ -289,8 +323,8 @@ function setupEventListeners() {
     handleFontSizeChange("decrease"),
   );
 
-  UI.quranBtn.addEventListener("click", () => handleQuranSelection());
-  UI.hadithBtn.addEventListener("click", () => handleHadithSelection());
+  UI.quranBtn.addEventListener("click", () => handleSelection(true));
+  UI.hadithBtn.addEventListener("click", () => handleSelection(false));
 
   UI.chaptersList.addEventListener("click", (e) => {
     const btn = e.target.closest("[data-number]");
@@ -314,6 +348,16 @@ function setupEventListeners() {
     activateElement(UI.languageSelector.children, btn);
     changeLanguage(btn);
   });
+
+  window.addEventListener("scroll", () => {
+    let percentage =
+      (window.scrollY * 100) / document.documentElement.scrollHeight ;
+    UI.scrollTopBtn.style = `--scroll-percent:${percentage}%;`;
+
+    if (window.scrollY >= 200) UI.scrollTopBtn.style.opacity = "1";
+    else UI.scrollTopBtn.style.opacity = "0";
+  });
+  UI.scrollTopBtn.addEventListener("click", scrollToTop);
 }
 
 /* ==================== Event Handlers / Interactions ==================== */
@@ -372,14 +416,24 @@ async function setLanguage() {
   const searchDetailEle = UI.leftSidebar.lastElementChild;
   searchDetailEle.style.direction = appState.dir;
 
-  UI.rightSidebar.firstElementChild.classList.remove("direction");
-  UI.leftSidebar.firstElementChild.classList.remove("direction");
-  if (appState.siteLang == "en") {
-    UI.rightSidebar.firstElementChild.classList.add("direction");
-    UI.leftSidebar.firstElementChild.classList.add("direction");
-  }
+
+  reverseDir(UI.navbar);
+  reverseDir(UI.menuContainer);
+  reverseDir(UI.rightSidebar.firstElementChild);
+  reverseDir(UI.leftSidebar.firstElementChild);
 }
 
+function reverseDir(ele) {
+  UI.subMenu.style.left = 0;
+  UI.subMenu.style.direction = "rtl";
+
+  ele.classList.add("direction");
+  if (appState.siteLang == "en") {
+    UI.subMenu.style.left = "auto";
+    UI.subMenu.style.direction = "ltr";
+    ele.classList.remove("direction");
+  }
+}
 
 function changeContentLang(container) {
   if (!container) return;
@@ -390,7 +444,7 @@ function changeContentLang(container) {
     if (appState.siteLang == "ar") content = li.dataset.arabicName;
 
     li.innerHTML = content;
-});
+  });
 }
 
 async function changeChapterBoxLanguage(chaptersInfo) {
@@ -399,25 +453,25 @@ async function changeChapterBoxLanguage(chaptersInfo) {
     rightValue = "13px",
     ayah = "Ayah";
 
-    if (appState.siteLang == "ar") {
-      name = "arabicname";
-      [leftValue, rightValue] = [rightValue, leftValue];
-      ayah = "اية";
-    }
+  if (appState.siteLang == "ar") {
+    name = "arabicname";
+    [leftValue, rightValue] = [rightValue, leftValue];
+    ayah = "اية";
+  }
 
-    const chaptersBox = UI.chaptersList.querySelectorAll(".chapter");
+  const chaptersBox = UI.chaptersList.querySelectorAll(".chapter > span");
 
-    chaptersBox.forEach((ele, ind) => {
-    ele.children[1].innerHTML = chaptersInfo[ind][name];
-    ele.children[2].style.left = leftValue;
-    ele.children[2].style.right = rightValue;
-    ele.children[2].innerHTML = `${chaptersInfo[ind].verses.length} ${ayah}`;
+  chaptersBox.forEach((ele, ind) => {
+    ele.parentElement.children[1].innerHTML = chaptersInfo[ind][name];
+    ele.style.left = leftValue;
+    ele.style.right = rightValue;
+    ele.innerHTML = `${chaptersInfo[ind].verses.length} ${ayah}`;
   });
 }
 
 /* ==================== State Handlers ==================== */
 if (localStorage.jsonFile == "Quran" || !localStorage.jsonFile) {
-  handleQuranSelection().then(() => {
+  handleSelection(true).then(() => {
     if (localStorage.bookLanguage) {
       let activeLan = UI.languageSelector.querySelector(
         `[data-language = ${localStorage.bookLanguage}]`,
@@ -425,26 +479,40 @@ if (localStorage.jsonFile == "Quran" || !localStorage.jsonFile) {
       activateElement(UI.languageSelector.children, activeLan);
     }
   });
-} else if (localStorage.jsonFile == "Hadith") handleHadithSelection();
+} else if (localStorage.jsonFile == "Hadith") handleSelection(false);
 
-async function handleQuranSelection() {
-  const quranLanguages = await QuranService.filteredLanguages();
-  const quranData = await dataServer.quranData();
-  const chaptersInfo = quranData.chaptersInfo;
-
-  appState.isItQuran = true;
-  localStorage.jsonFile = "Quran";
-  initApp(UI.quranBtn, quranData, chaptersInfo, quranLanguages, true);
-}
-
-async function handleHadithSelection() {
-  const hadithData = await dataServer.hadithData();
-  const books = hadithData.hadithBooks;
-  const bookDetails = hadithData.bookDetails;
-
-  appState.isItQuran = false;
-  localStorage.jsonFile = "Hadith";
-  initApp(UI.hadithBtn, bookDetails, books, hadithData, false);
+async function handleSelection(isQuran) {
+  showLoading(body);
+  try {
+    if (isQuran) {
+      const [quranLanguages, quranData] = await Promise.all([
+        QuranService.filteredLanguages(),
+        dataServer.quranData(),
+      ]);
+      appState.isItQuran = true;
+      localStorage.jsonFile = "Quran";
+      initApp(
+        UI.quranBtn,
+        quranData,
+        quranData.chaptersInfo,
+        quranLanguages,
+        true,
+      );
+    } else {
+      const hadithData = await dataServer.hadithData();
+      appState.isItQuran = false;
+      localStorage.jsonFile = "Hadith";
+      initApp(
+        UI.hadithBtn,
+        hadithData.bookDetails,
+        hadithData.hadithBooks,
+        hadithData,
+        false,
+      );
+    }
+  } finally {
+    setTimeout(() => hideLoading(body), 1000);
+  }
 }
 
 // Change text size
@@ -710,6 +778,7 @@ async function showSectionsList(subBox, btnNumber) {
 async function showHadithsList(subBox) {
   subBox.innerHTML = "";
   showLoading(subBox);
+
   let bookNumber = appState.bookNumber;
   let lang = appState.hadithLang[bookNumber - 1];
   const hadithData = await HadithService.hadithData(bookNumber, lang);
@@ -738,6 +807,7 @@ async function showHadithsList(subBox) {
 function showHadithContent(li, lang, hadiths) {
   let hadithNum = li.dataset.number;
   let elements = createElements("page=div", "content=p", "detail=p");
+  UI.leftSidebar.classList.remove("active");
 
   UI.articleContainer.innerHTML = "";
   UI.articleContainer.dataset.number = hadithNum;
@@ -824,7 +894,8 @@ async function showBook(btn) {
 
   showLoading(body);
   scrollToTop();
-  UI.main.classList.add("hidden")
+  UI.main.classList.add("hidden");
+  UI.leftSidebar.classList.remove("active");
 
   if (appState.isItQuran) {
     const quranData = await dataServer.quranData();
@@ -857,7 +928,7 @@ async function showBook(btn) {
     createTextBook(sections, translations);
     UI.articleContainer.dataset.key = "Books";
   }
-  UI.articleContainer.style.direction = isItArabic ? "rtl" : "ltr" ;
+  UI.articleContainer.style.direction = isItArabic ? "rtl" : "ltr";
   hideLoading(body);
 }
 
@@ -970,7 +1041,8 @@ async function getQuranPart(btn, key) {
 
   showLoading(body);
   scrollToTop();
-  UI.main.classList.add("hidden")
+  UI.main.classList.add("hidden");
+  UI.leftSidebar.classList.remove("active");
 
   let btnNumber = btn.dataset.number;
   let partName = btn.dataset[lang];
@@ -1063,9 +1135,9 @@ async function showHadithPart(lang, li, bookNumber) {
 
   showLoading(body);
   scrollToTop();
-  UI.main.classList.add("hidden")
-
-  UI.articleContainer.dataset.number = bookNumber;
+  UI.main.classList.add("hidden");
+  (UI.leftSidebar.classList.remove("active"),
+    (UI.articleContainer.dataset.number = bookNumber));
   UI.articleContainer.dataset.key = "sections";
 
   let bookDetails = await HadithService.getSpecificPart(
@@ -1354,9 +1426,11 @@ function createHadithQuote(randomHadith, translations) {
   UI.quoteText.innerHTML = randomHadith.hadith;
   let isArabic = appState.hadithLang[appState.bookNumber - 1].startsWith("ar");
   const bookName =
-    translations[isArabic? "ar" : "en"].hadith.booksName[appState.bookNumber - 1];
+    translations[isArabic ? "ar" : "en"].hadith.booksName[
+      appState.bookNumber - 1
+    ];
 
-  const hadith = isArabic? "حديث" : "Hadith";
+  const hadith = isArabic ? "حديث" : "Hadith";
   UI.quoteDetails.innerHTML = `${hadith} ${randomHadith.hadithNumber}, ${bookName}`;
 }
 
@@ -1369,4 +1443,21 @@ function getReadingTime(text) {
 
 setTimeout(() => hideLoading(body), 3000);
 
-
+// UI.scrollTopBtn.addEventListener("click", showNotification);
+// function showNotification() {
+//   if (window.PushManager) {
+//     navigator.serviceWorker.ready.then((res) => {
+//       res.showNotification("Welcome!", {
+//         body: "Let us continue reading!",
+//         badge: "./assets/images/icons/icon-192x192.png",
+//         icon: "./assets/images/icons/icon-512x512.png",
+//         vibrate: [200, 100, 200],
+//         requireInteraction: true,
+//         actions: [
+//           { action: "open", title: "افتح" },
+//           { action: "close", title: "أغلق" },
+//         ],
+//       });
+//     });
+//   }
+// }

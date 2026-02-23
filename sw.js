@@ -1,13 +1,13 @@
 const CACHE_NAME = "v1";
 const ASSETS = [
   "./",
-  "./index.html",
+  /*"./index.html",
   "./manifest.json",
   "./assets/script/main.js",
   "./assets/script/quran.js",
   "./assets/script/hadith.js",
   "./assets/script/fonts.js",
-  "./assets/script/utils.js",
+  "./assets/script/utils.js",*/
   "./assets/script/translations.json",
   "./assets/style/style.css",
   "./assets/images/background.webp",
@@ -47,3 +47,16 @@ self.addEventListener("fetch", (fetchEvent) => {
     caches.match(fetchEvent.request).then(cached => cached || fetch(fetchEvent.request))
   );
 });
+
+
+self.addEventListener("push", (pushEvent) => {
+  console.log("pushed",pushEvent.data)
+  pushEvent.waitUntil(
+    self.registration.showNotification("title",{
+      body: "something"
+    })
+  );
+});
+
+
+

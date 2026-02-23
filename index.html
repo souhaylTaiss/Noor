@@ -18,14 +18,23 @@
       <nav>
         <div class="container">
           <ul>
-            <li class="menu">
+            <li tabindex="0">
               <img src="./assets/images/icons/menu.svg" alt="menu" />
-            </li>
-            <li class="search-btn">
-              <img src="./assets/images/icons/search.svg" alt="search" />
-            </li>
-            <li class="home">
-              <img src="./assets/images/icons/book.svg" alt="books-icon" />
+              <ul class="sub-list">
+                <li class="home">
+                  <img src="./assets/images/icons/book.svg" alt="books-icon" />
+                  <span data-i18n="UI.books">الكتب</span>
+                </li>
+                <li class="menu">
+                  <img src="./assets/images/icons/menu.svg" alt="menu" />
+                  <span data-i18n="UI.settings">الاعدادات</span>
+                </li>
+                <li class="search-btn">
+                  <img src="./assets/images/icons/search.svg" alt="search" />
+                  <span data-i18n="UI.search">بحث</span>
+                </li>
+              </ul>
+
             </li>
             <li>
               <button type="button" value="quran" data-i18n="UI.quranBtn">
@@ -35,6 +44,11 @@
             <li>
               <button type="button" value="hadith" data-i18n="UI.hadithBtn">
                 الحديث
+              </button>
+            </li>
+            <li>
+              <button type="button" value="download" data-i18n="UI.download">
+                تنزيل
               </button>
             </li>
           </ul>
@@ -66,6 +80,7 @@
               <div data-i18n="UI.autoSuggestBtn">إقتراح آلي</div>
               <span></span>
             </div>
+
           </div>
         </div>
 
@@ -144,6 +159,10 @@
       </div>
     </aside>
 
+    <div class="scroll-top">
+      <div>A</div>
+    </div>
+
     <footer>
       <p>Copyright Souhayl Taiss &copy; 2026</p>
     </footer>
@@ -166,6 +185,15 @@
             console.log("Error:", err);
           });
       }
+
+      Notification.requestPermission()
+      .then(res => {
+        if (res === "granted") {
+          console.log("Notification Allowed");
+        } else {
+          console.log("Notification Denied");
+        }
+    })
     </script>
   </body>
 </html>
