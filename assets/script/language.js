@@ -3,7 +3,6 @@ import { UI, activateElement } from "./elements.js";
 import { appState, isArabic } from "./state.js";
 import { dataServer } from "./data.js";
 import { showLoading, hideLoading } from "./loading.js";
-import { createListInSidebar } from "./sidebar.js";
 import { createArticle, createTextBook } from "./article.js";
 import { generateQuoteFromJson } from "./quote.js";
 

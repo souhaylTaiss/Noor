@@ -1,4 +1,4 @@
-const CACHE_NAME = "Noor-v1";
+const CACHE_NAME = "Noor-v3";
 const ASSETS = [
   "./",
   "./index.html",
@@ -8,7 +8,6 @@ const ASSETS = [
   "./assets/script/main.js",
   "./assets/script/quran.js",
   "./assets/script/hadith.js",
-  "./assets/script/fonts.js",
   "./assets/script/utils.js",
   "./assets/script/loading.js",
   "./assets/script/state.js",

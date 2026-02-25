@@ -1,5 +1,4 @@
 // ==================== Main Entry Point ====================
-import { getAllFonts } from "./fonts.js";
 import { QuranService } from "./quran.js";
 import { HadithService } from "./hadith.js";
 
@@ -159,6 +158,7 @@ async function initApp(btn, data, dataInfo, dataLanguages, checkLang) {
     return;
   }
   addBookOptions(bookOptions.hadith, dataLanguages);
+  appState.siteLang == "en" ? UI.siteLangEn.click() : UI.siteLangAr.click();
 }
 
 // ==================== Handle Selection ====================
@@ -194,7 +194,7 @@ export async function handleSelection(isQuran) {
       );
     }
   } finally {
-    setTimeout(() => hideLoading(body), 1000);
+    setTimeout(() => hideLoading(body), 2500);
   }
   renderBookmarksInMenu();
   checkBookmark();
@@ -235,8 +235,11 @@ function handleFontSizeChange(operation) {
 }
 
 // ==================== Fonts ====================
+const fontsUrl = "https://cdn.jsdelivr.net/gh/fawazahmed0/quran-api@1/fonts.json";
+
 async function setupFontOptions() {
-  const fontsData = await getAllFonts();
+  const fontsData =  await fetchUrl(fontsUrl);
+
   createListInSidebar(fontsData, UI.fontSelector, "font");
   let fontsList = document.querySelectorAll(".fonts-box li");
 
@@ -389,7 +392,6 @@ if (localStorage.siteLanguage == "ar" || !localStorage.siteLanguage) {
 
 if (localStorage.jsonFile == "Quran" || !localStorage.jsonFile) {
   handleSelection(true).then(() => {
-    console.log("work");
     getFromLocal(UI.languageSelector, localStorage.bookLanguage);
   });
 } else if (localStorage.jsonFile == "Hadith") {

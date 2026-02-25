@@ -184,7 +184,7 @@ nav .container > ul .sub-list {
   inset-inline-end: 0; /* RTL/LTR aware positioning */
 }
 nav .container > ul li:first-child:focus-within .sub-list {
-  top: 50px;
+  top: 58px;
   opacity: 1;
   pointer-events: all;
 }
@@ -224,7 +224,7 @@ nav .container > ul .sub-list li:hover img {
   filter: grayscale(0);
 }
 nav .container button {
-  font-size: 19px;
+  font-size: 21px;
   background-color: transparent;
   margin: 0 3px;
   cursor: pointer;

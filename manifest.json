@@ -4,7 +4,7 @@
   "description": "Noor Quran and Hadith app.",
   "start_url": "./",
   "display": "standalone",
-  "orientation": "portray",
+  "orientation": "portrait",
   "scope": "./",
   "theme_color": "black",
   "background_color": "white",
