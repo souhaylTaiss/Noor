@@ -40,13 +40,15 @@ export async function setLanguage() {
 
   localStorage.siteLanguage = appState.siteLang;
   UI.inputSearch.placeholder = translations[appState.siteLang].UI.inputSearch;
-  UI.subInputSearch.placeholder = translations[appState.siteLang].UI.inputSearch;
+  UI.subInputSearch.placeholder =
+    translations[appState.siteLang].UI.inputSearch;
   UI.chaptersList.dir = appState.dir;
   UI.leftSidebar.lastElementChild.style.direction = appState.dir;
 
-UI.logo.src = isArabic()
-? UI.logo.src.replace("logo", "arabic-logo")
-  : UI.logo.src.replace("arabic-logo", "logo")
+  UI.logo.src =
+    appState.siteLang == "ar"
+      ? UI.logo.src.replace(/(arabic-)?logo/, "arabic-logo")
+      : UI.logo.src.replace("arabic-logo", "logo");
 
   let bookmarkBox = document.querySelector(".bookmark-box");
   reverseDir(bookmarkBox);
@@ -68,14 +70,18 @@ export function reverseDir(ele) {
 
 export function changeContentLang() {
   document.querySelectorAll("[data-arabic-name]").forEach((ele) => {
-    ele.innerHTML = appState.siteLang === "ar"
-      ? ele.dataset.arabicName
-      : ele.dataset.latinName || ele.dataset.engName;
+    ele.innerHTML =
+      appState.siteLang === "ar"
+        ? ele.dataset.arabicName
+        : ele.dataset.latinName || ele.dataset.engName;
   });
 }
 
 export async function changeChapterBoxLanguage(chaptersInfo) {
-  let name = "name", leftValue = "auto", rightValue = "13px", ayah = "Ayah";
+  let name = "name",
+    leftValue = "auto",
+    rightValue = "13px",
+    ayah = "Ayah";
 
   if (appState.siteLang == "ar") {
     name = "arabicname";
@@ -126,7 +132,11 @@ export async function changeLanguage(btn) {
   translateArticleIfExists(dataDetails, articleTitleLang, translations);
 }
 
-export async function translateArticleIfExists(data, articleTitleLang, translations) {
+export async function translateArticleIfExists(
+  data,
+  articleTitleLang,
+  translations,
+) {
   UI.rightSidebar.classList.remove("active");
   if (!UI.articleContainer.hasChildNodes()) return;
   showLoading(UI.articleContainer);
@@ -150,12 +160,15 @@ export async function translateArticleIfExists(data, articleTitleLang, translati
   let subBtn = UI.searchResultBox.querySelector(".sub-box .active");
   let lang = appState.hadithLang[btnNumber - 1];
 
-  const { showHadithPart, showHadithsList, getQuranPart, subBox } = await import("./sidebar.js");
+  const { showHadithPart } = await import("./article.js");
+  const {showHadithsList, subBox} = await import("./sidebar.js")
   const { getQuranPart: getQuranPartArticle } = await import("./article.js");
 
   if (key == "sections") showHadithPart(lang, subBtn, btnNumber);
   if (key == "Hadiths") {
-    showHadithsList(subBox, btn).then(() => subBox.children[btnNumber - 1].click());
+    showHadithsList(subBox, btn).then(() =>
+      subBox.children[btnNumber - 1].click(),
+    );
     return;
   }
   if (key == "juzs" || key == "pages") getQuranPartArticle(btn, key);
