@@ -1,234 +1,141 @@
-// Script
-/* ==================== Services / Data Fetching ==================== */
-import { getAllFonts } from "../script/fonts.js";
-import { QuranService } from "../script/quran.js";
-import { HadithService } from "../script/hadith.js";
+// ==================== Main Entry Point ====================
+import { getAllFonts } from "./fonts.js";
+import { QuranService } from "./quran.js";
+import { HadithService } from "./hadith.js";
+
+import { UI, createElements, activateElement } from "./elements.js";
+import { appState, bookOptions } from "./state.js";
+import { dataServer } from "./data.js";
+import { showLoading, hideLoading } from "./loading.js";
+import { createArticle, createTextBook } from "./article.js";
+import { createListInSidebar, addBookOptions, subBox } from "./sidebar.js";
+import { handleSearch } from "./sidebar.js";
+import { handleSiteLang, setLanguage, changeLanguage } from "./language.js";
+import { generateQuoteFromJson } from "./quote.js";
+import { getQuranPart, showHadithPart } from "./article.js";
+import { isArabic } from "./state.js";
 import { fetchUrl } from "./utils.js";
 
-const translationUrl = "./assets/script/translations.json";
+const body = document.body;
+const scrollToTop = () => window.scrollTo(0, 0);
 
-/* ========== Data Service / API Layer ========== */
-const dataServer = {
-  quranData: () => QuranService.getQuranByLang(appState.language),
-  hadithData: () =>
-    HadithService.hadithData(
-      appState.bookNumber,
-      appState.hadithLang[appState.bookNumber - 1],
-    ),
-  translationsData: fetchUrl(translationUrl),
-};
+// ---- Init state that depends on UI ----
+appState.bookNumber = UI.articleContainer.dataset.number || 1;
 
-/* ==================== DOM Elements ==================== */
-const UI = {
-  home: document.querySelector(".home"),
-  main: document.querySelector("main"),
-  burgerMenuBtn: document.querySelector(".menu"),
-  searchBtn: document.querySelector(".search-btn"),
-  rightCloseBtn: document.querySelector("aside.settings .close-btn"),
-  leftCloseBtn: document.querySelector("aside.book-details .close-btn"),
-  siteLangAr: document.querySelector(".website-language-box li:first-child"),
-  siteLangEn: document.querySelector(".website-language-box li:last-child"),
-  rightSidebar: document.querySelector("aside.settings"),
-  leftSidebar: document.querySelector("aside.book-details"),
-  searchResultBox: document.querySelector(".details"),
-  bookOptionContainer: document.querySelector(".book-detail-selectors"),
-  languageSelector: document.querySelector(".language-box"),
-  fontSelector: document.querySelector(".fonts-box"),
-  fontSizeIncrease: document.querySelector("aside .box .increase"),
-  fontSizeDecrease: document.querySelector("aside .box .reduce"),
-  quranBtn: document.querySelector("[value='quran']"),
-  hadithBtn: document.querySelector("[value='hadith']"),
-  inputSearch: document.querySelector(".search-field input"),
-  subInputSearch: document.querySelector(".search-field input:last-child"),
-  quoteText: document.querySelector(".quote-generator p"),
-  quoteDetails: document.querySelector(".quote span"),
-  shrinkingBar: document.querySelector(".shrinking-bar"),
-  chaptersList: document.getElementById("chapters-container"),
-  heroSection: document.querySelector(".hero-section"),
-  generateBtn: document.querySelector(".generator .btn:first-child"),
-  autoGenerateBtn: document.querySelector(".generator .btn:last-child"),
-  pausePlayIcon: document.querySelector(".btn span"),
-  articleContainer: document.querySelector("article .container"),
-  loading: document.querySelector(".loading"),
-  scrollTopBtn: document.querySelector(".scroll-top"),
-  downloadBtn: document.querySelector("[value='download'"),
-  navbar: document.querySelector("nav .container"),
-  menuContainer: document.querySelector("nav .container ul:first-child"),
-  subMenu: document.querySelector("nav .container ul ul")
-};
-/* ==================== App State & Config ==================== */
-let body = document.querySelector("body");
-
-showLoading(body);
-
-let appState = {
-  isItQuran: true,
-  siteLang: localStorage.siteLanguage || "ar",
-  dir: localStorage.siteLanguage === "en" ? "ltr" : "rtl",
-  language: localStorage.bookLanguage || "ara_quranwarsh",
-  hadithLang: JSON.parse(localStorage.hadithLang || "false") || {
-    0: "ara-abudawud",
-    1: "ara-bukhari",
-    2: "ara-dehlawi",
-    3: "ara-ibnmajah",
-    4: "ara-malik",
-    5: "ara-muslim",
-    6: "ara-nasai",
-    7: "ara-nawawi",
-    8: "ara-qudsi",
-    9: "ara-tirmidhi",
-  },
-  direction: localStorage.languageDirection || "rtl",
-  fontSize: +localStorage.step + 30 || 30,
-  step: localStorage.step || 1,
-  maxStep: 10,
-  minStep: 1,
-  intervalId: null,
-  isGenerating: false,
-  generateHandler: null,
-  autoGenerateHandler: null,
-  bookNumber: UI.articleContainer.dataset.number || 1,
-};
-
-const bookOptions = {
-  quran: [
-    { content: "الصور", data: "chapters" },
-    { content: "الاجزاء", data: "juzs" },
-    { content: "الصفحات", data: "pages" },
-    { content: "الايات", data: "verses" },
-  ],
-  hadith: [
-    { content: "الكتب", data: "Books" },
-    { content: "الفصول", data: "sections" },
-    { content: "الاحاديث", data: "Hadiths" },
-  ],
-};
-
+// ---- Font setup ----
 let elementsFont = document.querySelectorAll(".font-family");
 let styleElement = document.createElement("style");
-
 document.head.append(styleElement);
 
-/* ==================== Helpers Functions ==================== */
+// ---- Persist hadithLang ----
 if (!localStorage.hadithLang) {
   localStorage.hadithLang = JSON.stringify(appState.hadithLang);
 }
 
-function showLoading(target) {
-  const loadingEle = createElements("div").div;
-  loadingEle.className = "loading";
-  loadingEle.innerHTML = `<div class="loading-ring"></div>`;
-  target.style.position = "relative";
+// ---- Font size init ----
+const isMobile = window.innerWidth < 768;
+if (isMobile) appState.fontSize = Math.ceil(appState.fontSize * 0.6);
 
-  if (target.tagName == "BODY") {
-    loadingEle.style.backgroundColor = "white";
-    loadingEle.style.height = "100vh";
-    loadingEle.style.position = "fixed";
-    loadingEle.style.zIndex = "19999";
-  }
+UI.fontSizeIncrease.nextElementSibling.innerHTML = appState.step;
+UI.quoteText.style.fontSize = `${appState.fontSize}px`;
+UI.articleContainer.style.fontSize = `${appState.fontSize}px`;
+UI.articleContainer.style.maxWidth = `${700 + appState.step * 30}px`;
 
-  target.insertAdjacentElement("afterbegin", loadingEle);
-}
+// ==================== Show Book ====================
+export async function showBook(btn) {
+  let dataNumber = +btn.dataset.number;
+  let isItArabic = true;
 
-async function hideLoading(target) {
-  const loadingEle = target.querySelector(".loading");
-  loadingEle.remove();
-}
-
-const scrollToTop = () => window.scrollTo(0, 0);
-
-async function translateArticleIfExists(data, articleTitleLang, translations) {
-  const articleChildren = UI.articleContainer.hasChildNodes();
-  if (!articleChildren) return;
-  showLoading(UI.articleContainer);
+  showLoading(body);
   scrollToTop();
+  UI.main.classList.add("hidden");
+  UI.leftSidebar.classList.remove("active");
 
-  let btnNumber = UI.articleContainer.dataset.number;
-  const key = UI.articleContainer.dataset.key;
+  if (appState.isItQuran) {
+    const quranData = await dataServer.quranData();
+    const chaptersInfo = quranData.chaptersInfo;
+    let title = chaptersInfo[dataNumber - 1][quranData.articleTitleLang];
+    isItArabic = appState.language.startsWith("ara");
+    createArticle([title, dataNumber, chaptersInfo, quranData.quran]);
+    UI.articleContainer.dataset.key = "chapters";
+  } else {
+    appState.bookNumber = dataNumber;
+    const hadithData = await dataServer.hadithData();
+    const translations = await dataServer.translationsData;
+    const bookDetails = hadithData.bookDetails;
 
-  if (appState.isItQuran && key == "chapters") {
-    let chapterName = data.chaptersInfo[btnNumber - 1][articleTitleLang];
-    createArticle([chapterName, +btnNumber, data.chaptersInfo, data.quran]);
-    return;
-  }
-
-  if (key == "Books") {
-    createTextBook(data.sections, translations);
-    return;
-  }
-
-  let btn = UI.searchResultBox.querySelector("ul:first-child .active");
-  let subBtn = UI.searchResultBox.querySelector(".sub-box .active");
-
-  let lang = appState.hadithLang[btnNumber - 1];
-
-  if (key == "sections") showHadithPart(lang, subBtn, btnNumber);
-
-  if (key == "Hadiths") {
-    showHadithsList(subBox, btn).then(() =>
-      subBox.children[btnNumber - 1].click(),
+    createListInSidebar(
+      hadithData.languagesOfBook,
+      UI.languageSelector,
+      "language",
+      true,
     );
-    return;
+
+    let activeLan = UI.languageSelector.querySelector(
+      `[data-language = ${appState.hadithLang[dataNumber - 1]}]`,
+    );
+    activateElement(UI.languageSelector.children, activeLan);
+
+    generateQuoteFromJson(bookDetails, translations);
+    isItArabic = bookDetails.isArabicLang;
+    appState.siteLang = isItArabic ? "ar" : "en";
+    createTextBook(bookDetails.sections, translations);
+    UI.articleContainer.dataset.key = "Books";
   }
 
-  if (key == "juzs" || key == "pages") getQuranPart(btn, key);
-  else if (Number.isInteger(+key)) {
-    btnNumber = btn.dataset.number;
-    getQuranPart(subBtn, btnNumber);
-  }
+  UI.articleContainer.style.direction = isItArabic ? "rtl" : "ltr";
+  hideLoading(body);
 }
 
-function createElements(...elementsName) {
-  let elements = {};
-  elementsName.forEach((element) => {
-    element = element.split("=");
-    elements[element[0]] = document.createElement(element[element.length - 1]);
-  });
+// ==================== Create Chapter Box ====================
+async function createChapterBox(allChapters, translations) {
+  let isItArabic = appState.siteLang.includes("ar");
+  appState.siteLang = isItArabic ? "ar" : "en";
+  let name = isItArabic ? "arabicname" : "name";
 
-  return elements;
-}
+  UI.chaptersList.innerHTML = "";
+  allChapters.forEach((chapter, ind) => {
+    let elements = createElements(
+      "chapterBox=div",
+      "div",
+      "span",
+      "spanNum=span",
+      "img",
+      "h2",
+    );
 
-function activateElement([...elements], li) {
-  elements.forEach((li) => li.classList.remove("active"));
-  li.classList.add("active");
-  li.parentElement.scrollTo(0, li.offsetTop);
-}
-
-// Create list in sidebar
-function createListInSidebar(obj, box, entry, checkBook = false) {
-  box.innerHTML = "";
-
-  for (let key in obj) {
-    if (entry === "language" && checkBook) {
-      addElements(key, entry, "author", "direction");
-    } else if (entry === "font") {
-      addElements(key, entry, "name", "woff2", "woff", "ttf");
+    if (appState.isItQuran) {
+      let span = createElements("span").span;
+      span.dataset.i18n = "UI.ayah";
+      span.innerHTML = " اية";
+      if (appState.siteLang == "en") {
+        elements.span.style.left = "auto";
+        elements.span.style.right = "13px";
+      }
+      elements.span.append(chapter.verses.length, span);
+      elements.h2.dataset.arabicName = chapter.arabicname;
+      elements.h2.dataset.latinName = chapter.name;
+      elements.h2.innerHTML = chapter[name];
     } else {
-      box.innerHTML =
-        appState.siteLang == "en"
-          ? "<p>Choose a book!</p>"
-          : "<p>!اختر كتاب</p>";
+      elements.h2.innerHTML =
+        translations[appState.siteLang].hadith.booksName[ind];
+      elements.h2.dataset.arabicName = translations["ar"].hadith.booksName[ind];
+      elements.h2.dataset.latinName = translations["en"].hadith.booksName[ind];
+      elements.h2.dataset.i18n = "hadith.booksName." + ind;
+      elements.span.innerHTML = "";
     }
-  }
 
-  function addElements(key, entry1, entry2, ...entry3) {
-    let elements = createElements("li", "span");
-    let details = obj[key][entry2] || obj[key]["name"];
-    elements.li.dataset[entry1] = obj[key].name;
-    elements.li.innerHTML = obj[key][entry1];
-    elements.span.innerHTML = `   (${details})`;
-
-    entry3.forEach((dataName) => {
-      elements.li.dataset[dataName] =
-        obj[key][dataName] || obj[key]["original"];
-    });
-
-    elements.li.append(elements.span);
-    box.append(elements.li);
-  }
+    elements.chapterBox.className = "chapter";
+    elements.chapterBox.dataset.number = ind + 1;
+    elements.spanNum.innerHTML = ind + 1;
+    elements.img.src = "./assets/images/icons/aya-num.svg";
+    elements.div.append(elements.spanNum, elements.img);
+    elements.chapterBox.append(elements.div, elements.h2, elements.span);
+    UI.chaptersList.append(elements.chapterBox);
+  });
 }
 
-/* ==================== Initialization ==================== */
+// ==================== Init App ====================
 async function initApp(btn, data, dataInfo, dataLanguages, checkLang) {
   UI.articleContainer.innerHTML = "";
   UI.searchResultBox.innerHTML = "";
@@ -238,14 +145,12 @@ async function initApp(btn, data, dataInfo, dataLanguages, checkLang) {
 
   const translations = await dataServer.translationsData;
   activateElement([UI.quranBtn, UI.hadithBtn], btn);
-
   createListInSidebar(
     dataLanguages,
     UI.languageSelector,
     "language",
     checkLang,
   );
-
   createChapterBox(dataInfo, translations);
   generateQuoteFromJson(data, translations);
 
@@ -256,233 +161,11 @@ async function initApp(btn, data, dataInfo, dataLanguages, checkLang) {
   addBookOptions(bookOptions.hadith, dataLanguages);
 }
 
-/* ==================== Event Listeners ==================== */
-setupEventListeners();
-
-function setupEventListeners() {
-  UI.burgerMenuBtn.addEventListener("click", () =>
-    UI.rightSidebar.classList.add("active"),
-  );
-
-  // Show download app prompt
-  let deferredPrompt;
-  window.addEventListener("beforeinstallprompt", (e) => {
-    UI.downloadBtn.style.display = "block";
-    deferredPrompt = e;
-  });
-
-  // Hide button if app are installed
-  UI.downloadBtn.addEventListener("click", async () => {
-    if (!deferredPrompt) return;
-
-    deferredPrompt.prompt();
-
-    let choiceResult = await deferredPrompt.choiceResult;
-    if (choiceResult !== "accepted") return;
-
-    deferredPrompt = null;
-    UI.downloadBtn.style.display = "none";
-  });
-
-  UI.searchBtn.addEventListener("click", () =>
-    UI.leftSidebar.classList.add("active"),
-  );
-
-  UI.home.addEventListener("click", () => {
-    scrollToTop();
-    UI.articleContainer.innerHTML = "";
-    UI.main.classList.remove("hidden");
-  });
-
-  UI.rightCloseBtn.addEventListener("click", () =>
-    UI.rightSidebar.classList.remove("active"),
-  );
-
-  UI.leftCloseBtn.addEventListener("click", () =>
-    UI.leftSidebar.classList.remove("active"),
-  );
-
-  UI.searchResultBox.addEventListener("click", () => {
-    let selector = document.querySelector(".book-detail-selectors .active");
-    let engName = selector.dataset.engName;
-
-    const hasSubMenu =
-      engName == "verses" || engName == "sections" || engName == "Hadiths";
-
-    if (hasSubMenu) return;
-    UI.rightSidebar.classList.remove("active");
-  });
-
-  UI.siteLangAr.addEventListener("click", () => handleSiteLang(UI.siteLangAr));
-  UI.siteLangEn.addEventListener("click", () => handleSiteLang(UI.siteLangEn));
-
-  UI.fontSizeIncrease.addEventListener("click", () =>
-    handleFontSizeChange("increase"),
-  );
-  UI.fontSizeDecrease.addEventListener("click", () =>
-    handleFontSizeChange("decrease"),
-  );
-
-  UI.quranBtn.addEventListener("click", () => handleSelection(true));
-  UI.hadithBtn.addEventListener("click", () => handleSelection(false));
-
-  UI.chaptersList.addEventListener("click", (e) => {
-    const btn = e.target.closest("[data-number]");
-    if (!btn) return;
-    UI.articleContainer.dataset.key = appState.isItQuran ? "chapters" : "Books";
-    showBook(btn);
-  });
-
-  UI.inputSearch.addEventListener("input", (ele) => handleSearch(ele, 0));
-  UI.subInputSearch.addEventListener("input", (ele) => handleSearch(ele, 1));
-
-  UI.leftSidebar.addEventListener("click", () => {
-    let subBox = UI.searchResultBox.querySelector(".sub-box");
-    if (!subBox) UI.subInputSearch.classList.add("hidden");
-  });
-
-  UI.languageSelector.addEventListener("click", (e) => {
-    const btn = e.target.closest("[data-language]");
-    if (!btn) return;
-
-    activateElement(UI.languageSelector.children, btn);
-    changeLanguage(btn);
-  });
-
-  window.addEventListener("scroll", () => {
-    let percentage =
-      (window.scrollY * 100) / document.documentElement.scrollHeight ;
-    UI.scrollTopBtn.style = `--scroll-percent:${percentage}%;`;
-
-    if (window.scrollY >= 200) UI.scrollTopBtn.style.opacity = "1";
-    else UI.scrollTopBtn.style.opacity = "0";
-  });
-  UI.scrollTopBtn.addEventListener("click", scrollToTop);
-}
-
-/* ==================== Event Handlers / Interactions ==================== */
-// Change language of website
-
-if (localStorage.siteLanguage == "ar") {
-  UI.siteLangAr.click();
-} else {
-  UI.siteLangEn.click();
-}
-
-async function handleSiteLang(btn) {
+// ==================== Handle Selection ====================
+export async function handleSelection(isQuran) {
   showLoading(body);
+  UI.main.classList.remove("hidden");
 
-  activateElement([UI.siteLangAr, UI.siteLangEn], btn);
-  appState.siteLang = btn.dataset.lang;
-  appState.dir = btn.dataset.dir;
-  setLanguage();
-
-  await new Promise((resolve) => setTimeout(resolve, 400));
-  hideLoading(body);
-}
-
-async function setLanguage() {
-  let translations = await dataServer.translationsData;
-  let chaptersInfo, elements;
-
-  if (appState.isItQuran) {
-    chaptersInfo = (await dataServer.quranData()).chaptersInfo;
-    changeChapterBoxLanguage(chaptersInfo);
-  }
-
-  elements = document.querySelectorAll("[data-i18n]");
-
-  elements.forEach((ele) => {
-    const path = ele.dataset.i18n.split(".");
-    let text = translations[appState.siteLang];
-    path.forEach((key) => (text = text[key]));
-    ele.innerHTML = text;
-    ele.dir = appState.dir;
-  });
-
-  const box = UI.searchResultBox.firstElementChild;
-  const subBox = UI.searchResultBox.querySelector(".sub-box");
-
-  changeContentLang(UI.bookOptionContainer);
-  changeContentLang(subBox);
-  changeContentLang(box);
-
-  localStorage.siteLanguage = appState.siteLang;
-  UI.inputSearch.placeholder = translations[appState.siteLang].UI.inputSearch;
-  UI.subInputSearch.placeholder =
-    translations[appState.siteLang].UI.inputSearch;
-  UI.chaptersList.dir = appState.dir;
-
-  const searchDetailEle = UI.leftSidebar.lastElementChild;
-  searchDetailEle.style.direction = appState.dir;
-
-
-  reverseDir(UI.navbar);
-  reverseDir(UI.menuContainer);
-  reverseDir(UI.rightSidebar.firstElementChild);
-  reverseDir(UI.leftSidebar.firstElementChild);
-}
-
-function reverseDir(ele) {
-  UI.subMenu.style.left = 0;
-  UI.subMenu.style.direction = "rtl";
-
-  ele.classList.add("direction");
-  if (appState.siteLang == "en") {
-    UI.subMenu.style.left = "auto";
-    UI.subMenu.style.direction = "ltr";
-    ele.classList.remove("direction");
-  }
-}
-
-function changeContentLang(container) {
-  if (!container) return;
-  const elements = Array.from(container?.children);
-
-  elements.forEach((li) => {
-    let content = li.dataset.engName || li.dataset.latinName;
-    if (appState.siteLang == "ar") content = li.dataset.arabicName;
-
-    li.innerHTML = content;
-  });
-}
-
-async function changeChapterBoxLanguage(chaptersInfo) {
-  let name = "name",
-    leftValue = "auto",
-    rightValue = "13px",
-    ayah = "Ayah";
-
-  if (appState.siteLang == "ar") {
-    name = "arabicname";
-    [leftValue, rightValue] = [rightValue, leftValue];
-    ayah = "اية";
-  }
-
-  const chaptersBox = UI.chaptersList.querySelectorAll(".chapter > span");
-
-  chaptersBox.forEach((ele, ind) => {
-    ele.parentElement.children[1].innerHTML = chaptersInfo[ind][name];
-    ele.style.left = leftValue;
-    ele.style.right = rightValue;
-    ele.innerHTML = `${chaptersInfo[ind].verses.length} ${ayah}`;
-  });
-}
-
-/* ==================== State Handlers ==================== */
-if (localStorage.jsonFile == "Quran" || !localStorage.jsonFile) {
-  handleSelection(true).then(() => {
-    if (localStorage.bookLanguage) {
-      let activeLan = UI.languageSelector.querySelector(
-        `[data-language = ${localStorage.bookLanguage}]`,
-      );
-      activateElement(UI.languageSelector.children, activeLan);
-    }
-  });
-} else if (localStorage.jsonFile == "Hadith") handleSelection(false);
-
-async function handleSelection(isQuran) {
-  showLoading(body);
   try {
     if (isQuran) {
       const [quranLanguages, quranData] = await Promise.all([
@@ -513,9 +196,11 @@ async function handleSelection(isQuran) {
   } finally {
     setTimeout(() => hideLoading(body), 1000);
   }
+  renderBookmarksInMenu();
+  checkBookmark();
 }
 
-// Change text size
+// ==================== Font Size ====================
 function handleFontSizeChange(operation) {
   const btns =
     operation === "increase"
@@ -526,30 +211,12 @@ function handleFontSizeChange(operation) {
     UI.fontSizeIncrease.style.opacity = ".5";
     return;
   }
-
   if (operation === "decrease" && appState.step <= appState.minStep) {
     UI.fontSizeDecrease.style.opacity = ".5";
     return;
   }
 
-  changeTextSize(btns, operation);
-  localStorage.step = appState.step;
-}
-
-// Change font size
-const isMobile = window.innerWidth < 768;
-const mobileSize = Math.ceil(appState.fontSize * 0.6);
-
-appState.fontSize = isMobile ? mobileSize : appState.fontSize;
-
-UI.fontSizeIncrease.nextElementSibling.innerHTML = appState.step;
-UI.quoteText.style.fontSize = `${appState.fontSize}px`;
-UI.articleContainer.style.fontSize = `${appState.fontSize}px`;
-UI.articleContainer.style.maxWidth = `${700 + appState.step * 30}px`;
-
-function changeTextSize(btns, operation) {
   const [btn1, btn2] = btns;
-
   if (operation === "increase") {
     appState.fontSize++;
     appState.step++;
@@ -560,14 +227,14 @@ function changeTextSize(btns, operation) {
 
   btn1.style.opacity = "1";
   btn2.style.opacity = "1";
-
   UI.quoteText.style.fontSize = `${appState.fontSize}px`;
   UI.articleContainer.style.fontSize = `${appState.fontSize}px`;
   UI.articleContainer.style.maxWidth = `${700 + appState.step * 30}px`;
   UI.fontSizeIncrease.nextElementSibling.innerHTML = appState.step;
+  localStorage.step = appState.step;
 }
 
-// Set fonts
+// ==================== Fonts ====================
 async function setupFontOptions() {
   const fontsData = await getAllFonts();
   createListInSidebar(fontsData, UI.fontSelector, "font");
@@ -575,889 +242,364 @@ async function setupFontOptions() {
 
   fontsList.forEach((li) => {
     li.addEventListener("click", () => {
+      UI.rightSidebar.classList.remove("active");
       activateElement(fontsList, li);
       addFontToStyle(li);
       localStorage.siteFont = li.dataset.font;
-      elementsFont.forEach((ele) => {
-        ele.style.fontFamily = `${li.dataset.font}`;
-      });
+      elementsFont.forEach((ele) => (ele.style.fontFamily = li.dataset.font));
     });
   });
+
+  getFromLocal(UI.fontSelector, localStorage.siteFont);
 }
-setupFontOptions();
 
 function addFontToStyle(li) {
   let fontName = li.dataset.font;
-  let isIncludeFont = styleElement.innerHTML.includes(li.dataset.fontName);
-  let fontFace = `
-          @font-face {
-            font-family: '${fontName}';
-            src: url('${li.dataset.woff2}') format('woff2'),
-                url('${li.dataset.woff}') format('woff'),
-                url('${li.dataset.ttf}') format('ttf');
-          }`;
+  if (styleElement.innerHTML.includes(li.dataset.fontName)) return;
 
-  if (!isIncludeFont) styleElement.append(fontFace);
+  styleElement.append(`
+    @font-face {
+      font-family: '${fontName}';
+      src: url('${li.dataset.woff2}') format('woff2'),
+           url('${li.dataset.woff}') format('woff'),
+           url('${li.dataset.ttf}') format('ttf');
+    }`);
 }
 
-/* ==================== Search Sidebar ==================== */
-function addBookOptions(data, dataInfo) {
-  UI.bookOptionContainer.innerHTML = "";
-
-  let contentLang;
-  if (appState.siteLang == "ar") contentLang = "content";
-  else contentLang = "data";
-
-  for (let ind in data) {
-    let li = createElements("li").li;
-    li.innerHTML = data[ind][contentLang];
-    li.dataset.engName = data[ind].data;
-    li.dataset.arabicName = data[ind].content;
-    UI.bookOptionContainer.append(li);
-  }
-
-  let all = document.querySelectorAll(".book-detail-selectors li");
-  all.forEach((li) => {
-    li.addEventListener("click", () => {
-      UI.searchResultBox.innerHTML = "";
-      activateElement(all, li);
-      getSpecificParts(li, dataInfo);
-    });
-  });
-}
-
-async function getSpecificParts(li, dataInfo) {
-  let key = li.dataset.engName;
-  const translations = await dataServer.translationsData;
-  let ul = createElements("ul").ul;
-
-  let keys = {
-    dataInfo: dataInfo[key],
-    key1: "name",
-    key2: "arabicname",
-    keyFilter: key,
-    translations: translations,
-    ul: ul,
-  };
-
-  if (key === "chapters" || key === "verses") {
-    if (key === "verses") key = "chapters";
-    keys.dataInfo = dataInfo[key];
-    keys.keyFilter = key;
-    showMatchDAta(keys);
-  } else if (key === "juzs") {
-    keys.dataInfo = dataInfo[key].references;
-    keys.key1 = "juz";
-    keys.key2 = "جزء";
-    showMatchDAta(keys);
-  } else if (key === "pages") {
-    keys.dataInfo = dataInfo[key].references;
-    keys.key1 = "page";
-    keys.key2 = "صفحة";
-
-    showMatchDAta(keys);
-  } else {
-    let hadithBooksName = Object.values(
-      translations[appState.siteLang].hadith.booksName,
-    );
-
-    keys.dataInfo = hadithBooksName;
-    keys.key1 = "booksName";
-    keys.key2 = "كتاب";
-
-    showMatchDAta(keys);
-  }
-
-  ul.style.flexGrow = 1;
-  UI.searchResultBox.append(ul);
-}
-
-let subBox = createElements("ul").ul;
-subBox.classList.add("sub-box");
-
-function showMatchDAta({
-  dataInfo: chaptersInfo,
-  key1,
-  key2,
-  keyFilter,
-  translations,
-  ul,
-}) {
-  for (let i = 0; i < chaptersInfo.length; i++) {
-    let ele = createElements("li").li;
-    let latinName = `${key1} ${i + 1}`;
-    let arabicName = `${key2} ${i + 1}`;
-
-    let wordLang = appState.siteLang == "en" ? key1 : key2;
-    let keyValue = key1;
-
-    if (keyFilter == "chapters" || keyFilter == "verses") {
-      wordLang = "";
-      latinName = chaptersInfo[i][key1];
-      arabicName = chaptersInfo[i][key2];
-      if (appState.siteLang === "ar") keyValue = key2;
-    } else if (
-      keyFilter == "Books" ||
-      keyFilter == "sections" ||
-      keyFilter == "Hadiths"
-    ) {
-      wordLang = "";
-      latinName = translations.en.hadith.booksName[i];
-      arabicName = translations.ar.hadith.booksName[i];
-    }
-
-    ele.dataset.lang = appState.siteLang;
-    ele.dataset.latinName = latinName;
-    ele.dataset.arabicName = arabicName;
-    ele.dataset.dir = appState.dir;
-    ele.dataset.number = i + 1;
-
-    ele.innerHTML = `${wordLang} ${chaptersInfo[i][keyValue] || chaptersInfo[i]}`;
-
-    ele.addEventListener("click", () => renderContent(ele, ul, chaptersInfo));
-    ul.append(ele);
-  }
-}
-
-async function renderContent(btn, ul, chaptersInfo) {
-  let selector = document.querySelector(".book-detail-selectors .active");
-  let engName = selector.dataset.engName;
-  let btnNumber = btn.dataset.number;
-  activateElement(ul.children, btn);
-
-  if (engName == "chapters") UI.chaptersList.children[btnNumber - 1].click();
-  else if (engName == "juzs" || engName == "pages") getQuranPart(btn, engName);
-  else if (engName == "verses") showVersesList(btnNumber, subBox, chaptersInfo);
-
-  if (!appState.isItQuran) {
-    let lang = appState.hadithLang[btnNumber - 1];
-
-    let hadithData = await HadithService.hadithData(btnNumber, lang);
-    let bookLanguages = hadithData.languagesOfBook;
-    createListInSidebar(bookLanguages, UI.languageSelector, "language", true);
-  }
-
-  appState.bookNumber = btnNumber;
-  if (engName == "Books") showBook(btn);
-  else if (engName == "sections") showSectionsList(subBox, btnNumber);
-  else if (engName == "Hadiths") showHadithsList(subBox, btn);
-}
-
-async function showSectionsList(subBox, btnNumber) {
-  UI.subInputSearch.innerHTML = "";
-  subBox.innerHTML = "";
-  let lang = appState.hadithLang[btnNumber - 1];
-  const translations = await dataServer.translationsData;
-  let sections =
-    translations[appState.siteLang].hadith.bookSections[btnNumber - 1];
-
-  sections.forEach((section, ind) => {
-    let latinSection =
-      translations["en"].hadith.bookSections[btnNumber - 1][ind];
-    let arabicSection =
-      translations["ar"].hadith.bookSections[btnNumber - 1][ind];
-    let li = createElements("li").li;
-
-    li.dataset.number = ind + 1;
-    li.dataset.latinName = latinSection;
-    li.dataset.arabicName = arabicSection;
-    li.innerHTML = `${section}`;
-
-    li.addEventListener("click", async () => {
-      activateElement(subBox.children, li);
-      showHadithPart(lang, li, btnNumber);
-    });
-
-    subBox.append(li);
+// ==================== Events ====================
+function setupEventListeners() {
+  window.addEventListener("offline", () => {
+    showMessage("You are offline, check your connection");
   });
 
-  UI.subInputSearch.classList.remove("hidden");
-  UI.searchResultBox.append(subBox);
-}
-
-async function showHadithsList(subBox) {
-  subBox.innerHTML = "";
-  showLoading(subBox);
-
-  let bookNumber = appState.bookNumber;
-  let lang = appState.hadithLang[bookNumber - 1];
-  const hadithData = await HadithService.hadithData(bookNumber, lang);
-
-  const hadiths = hadithData.bookDetails.hadiths;
-
-  for (let i = 0; i < hadiths.length; i++) {
-    let li = createElements("li").li;
-
-    li.dataset.number = i + 1;
-    li.dataset.latinName = `Hadith ${i + 1}`;
-    li.dataset.arabicName = `حديث ${i + 1}`;
-    li.innerHTML = `${appState.siteLang == "ar" ? "حديث" : "Hadith"} ${i + 1}`;
-
-    li.addEventListener("click", () => {
-      showHadithContent(li, lang, hadiths);
-    });
-
-    subBox.append(li);
-  }
-  UI.subInputSearch.classList.remove("hidden");
-  UI.searchResultBox.append(subBox);
-  hideLoading(subBox);
-}
-
-function showHadithContent(li, lang, hadiths) {
-  let hadithNum = li.dataset.number;
-  let elements = createElements("page=div", "content=p", "detail=p");
-  UI.leftSidebar.classList.remove("active");
-
-  UI.articleContainer.innerHTML = "";
-  UI.articleContainer.dataset.number = hadithNum;
-  UI.articleContainer.dataset.key = "Hadiths";
-
-  activateElement(subBox.children, li);
-
-  elements.page.className = "page";
-  elements.content.innerHTML = hadiths[hadithNum - 1].text;
-
-  if (appState.siteLang == "ar" || lang.startsWith("ar")) {
-    elements.detail.innerHTML = li.dataset.arabicName;
-  } else elements.detail.innerHTML = li.dataset.latinName;
-
-  elements.content.append(elements.detail);
-  elements.page.append(elements.content);
-  UI.articleContainer.append(elements.page);
-}
-
-function showVersesList(btnNumber, subBox, dataInfo) {
-  const versesInfo = dataInfo[btnNumber - 1].verses;
-  subBox.innerHTML = "";
-
-  for (let i = 0; i < versesInfo.length; i++) {
-    let li = createElements("li").li;
-    li.dataset.number = i + 1;
-    li.dataset.latinName = `Verse ${i + 1}`;
-    li.dataset.arabicName = `آية ${i + 1}`;
-    li.innerHTML = `${appState.siteLang == "ar" ? "آية" : "Verse"} ${i + 1}`;
-
-    li.addEventListener("click", () => {
-      activateElement(subBox.children, li);
-      getQuranPart(li, btnNumber);
-    });
-
-    subBox.append(li);
-  }
-
-  UI.subInputSearch.classList.remove("hidden");
-  UI.searchResultBox.append(subBox);
-}
-
-let noResultMsg = createElements("p").p;
-noResultMsg.className = "no-result-msg";
-noResultMsg.dataset.latinName = "No result!";
-noResultMsg.dataset.arabicName = "لا نتائج!";
-noResultMsg.innerHTML = appState.siteLang == "ar" ? "لا نتائج!" : "No result!";
-
-function handleSearch(ele, boxNum) {
-  const box = UI.searchResultBox?.children[boxNum];
-  const searchText = ele.target.value;
-  const options = [...(box?.children || [])];
-
-  box?.append(noResultMsg);
-
-  options.forEach((opt) => {
-    opt.style.display = "none";
-    let span = opt.querySelector("span");
-    span?.replaceWith(span.innerHTML);
+  window.addEventListener("online", () => {
+    showMessage("Back online!");
   });
-
-  let matchesList = options.filter((opt) => {
-    const regPatter = /[\u064B-\u0652\u0653\u0670\u06D6-\u06ED]/g;
-    opt.innerHTML = opt.innerHTML.replace(regPatter, "");
-    return opt.innerHTML.match(searchText);
-  });
-
-  matchesList.forEach((li) => {
-    li.style.display = "block";
-    li.innerHTML = li.innerHTML.replace(
-      searchText,
-      `<span>${searchText}</span>`,
-    );
-  });
-
-  !matchesList.length
-    ? (noResultMsg.style.display = "block")
-    : (noResultMsg.style.display = "none");
-}
-
-async function showBook(btn) {
-  let dataNumber = +btn.dataset.number;
-  let isItArabic = true;
-
-  showLoading(body);
-  scrollToTop();
-  UI.main.classList.add("hidden");
-  UI.leftSidebar.classList.remove("active");
-
-  if (appState.isItQuran) {
-    const quranData = await dataServer.quranData();
-    const quran = quranData.quran;
-    const chaptersInfo = quranData.chaptersInfo;
-
-    let title = chaptersInfo[dataNumber - 1][quranData.articleTitleLang];
-    isItArabic = appState.language.startsWith("ara");
-    createArticle([title, dataNumber, chaptersInfo, quran]);
-    UI.articleContainer.dataset.key = "chapters";
-  } else {
-    appState.bookNumber = dataNumber;
-    const hadithData = await dataServer.hadithData();
-    const translations = await dataServer.translationsData;
-    const bookDetails = hadithData.bookDetails;
-
-    let sections = bookDetails.sections;
-    let languages = hadithData.languagesOfBook;
-
-    createListInSidebar(languages, UI.languageSelector, "language", true);
-
-    let selector = `[data-language = ${appState.hadithLang[dataNumber - 1]}]`;
-    let activeLan = UI.languageSelector.querySelector(selector);
-    activateElement(UI.languageSelector.children, activeLan);
-
-    generateQuoteFromJson(bookDetails, translations);
-
-    isItArabic = bookDetails.isArabicLang;
-    appState.siteLang = bookDetails.isArabicLang ? "ar" : "en";
-    createTextBook(sections, translations);
-    UI.articleContainer.dataset.key = "Books";
-  }
-  UI.articleContainer.style.direction = isItArabic ? "rtl" : "ltr";
-  hideLoading(body);
-}
-
-/* ==================== Create Article ==================== */
-
-function createTextBook(sections, translations) {
-  let siteLang = appState.siteLang;
-  let title = createElements("h2").h2;
-  UI.articleContainer.innerHTML = "";
-  UI.articleContainer.dataset.number = appState.bookNumber;
-  title.innerHTML =
-    translations[siteLang].hadith.booksName[appState.bookNumber - 1];
-
-  for (let ind in sections) {
-    let subTitle = createElements("h3").h3;
-
-    subTitle.innerHTML =
-      translations[siteLang].hadith.bookSections[appState.bookNumber - 1][
-        ind - 1
-      ] || "";
-
-    let isItNewSection = true;
-    for (let i in sections[ind].content) {
-      let elements = createElements(
-        "page=div",
-        "titleBox=div",
-        "subTitle=h3",
-        "textBox=div",
-        "pageNumber=span",
-      );
-
-      if (i === "1") {
-        elements.titleBox.append(title);
-        elements.page.append(elements.titleBox);
-      }
-
-      if (isItNewSection) {
-        elements.titleBox.append(subTitle);
-        elements.page.append(elements.titleBox);
-        isItNewSection = false;
-      }
-
-      let hadiths = sections[ind].content[i];
-
-      hadiths.forEach((hadith) => {
-        let { text, reference } = createElements("text=p", "reference=p");
-        text.innerHTML = hadith.text;
-        let bookLang = appState.hadithLang[appState.bookNumber - 1];
-        let word = "Hadith";
-        if (bookLang.startsWith("ar")) {
-          word = "حديث";
-        }
-        reference.innerHTML = `${word} ${hadith.reference.hadith}`;
-        text.append(reference);
-        text.style.marginBottom = "20px";
-        elements.textBox.append(text);
-      });
-
-      elements.page.className = "page";
-      elements.pageNumber.classList.add("page-number");
-      elements.pageNumber.innerHTML = i;
-      elements.page.append(elements.textBox, elements.pageNumber);
-      UI.articleContainer.append(elements.page);
-    }
-    if (ind == 3) break;
-  }
-}
-
-function createArticle(chapterData) {
-  UI.articleContainer.innerHTML = "";
-
-  let articleData = QuranService.formatChapterPages(chapterData);
-  let { pages, chapterName, chapterNum, basmala } = articleData;
-
-  let firstPage = Object.keys(pages)[0];
-  for (let ind in pages) {
-    let elements = createElements(
-      "page=div",
-      "titleBox=div",
-      "title=h2",
-      "p",
-      "pageText=p",
-      "pageNumber=span",
-    );
-
-    if (firstPage === ind) {
-      UI.articleContainer.dataset.number = chapterNum;
-      UI.articleContainer.dataset.key = "chapters";
-      elements.titleBox.className = "title-box";
-      elements.title.innerHTML = chapterName;
-      elements.p.innerHTML = basmala;
-      elements.titleBox.append(elements.title, elements.p);
-      elements.page.append(elements.titleBox);
-    }
-
-    elements.page.className = "page";
-    elements.page.append(elements.pageText);
-
-    addTextToPage(pages[ind], elements);
-
-    elements.pageNumber.classList.add("page-number");
-    elements.pageNumber.innerHTML = ind;
-    elements.page.append(elements.pageNumber);
-    UI.articleContainer.append(elements.page);
-  }
-}
-
-async function getQuranPart(btn, key) {
-  let lang = appState.language.startsWith("ar") ? "arabicName" : "latinName";
-
-  showLoading(body);
-  scrollToTop();
-  UI.main.classList.add("hidden");
-  UI.leftSidebar.classList.remove("active");
-
-  let btnNumber = btn.dataset.number;
-  let partName = btn.dataset[lang];
-
-  UI.articleContainer.innerHTML = "";
-  let pages;
-
-  let quranData = await dataServer.quranData();
-  let chaptersInfo = quranData.chaptersInfo;
-
-  if (key == "juzs") {
-    pages = await QuranService.showJuzOfChapter(
-      appState.language,
-      key,
-      btnNumber,
-    );
-  } else if (key == "pages") {
-    pages = await QuranService.getSpecificPart(
-      appState.language,
-      key,
-      btnNumber,
-    );
-  } else {
-    let verse = await QuranService.getSpecificPart(
-      appState.language,
-      key,
-      btnNumber,
-    );
-
-    pages = {};
-    pages[partName] = [verse];
-  }
-
-  let pagesArr = Object.entries(pages);
-  let firstPage = pagesArr[0][0];
-
-  let preChapter = pagesArr[0][1][0].chapter;
-
-  pagesArr.forEach((page) => {
-    let ind = page[0];
-    let isFirstPage = firstPage === ind;
-    let elements = createElements(
-      "page=div",
-      "titleBox=div",
-      "title=h2",
-      "subTitle=h3",
-      "pageText=p",
-      "pageNumber=span",
-    );
-
-    if (isFirstPage) {
-      UI.articleContainer.dataset.number = btnNumber;
-      UI.articleContainer.dataset.key = key;
-      elements.titleBox.className = "title-box";
-      elements.title.innerHTML = btn.dataset[lang];
-      elements.titleBox.append(elements.title);
-      if (!(key == "pages" || btn.dataset.latinName.startsWith("Verse"))) {
-        elements.page.append(elements.titleBox);
-      }
-    }
-
-    if (page[1][0].chapter !== preChapter || isFirstPage) {
-      preChapter = page[1][0].chapter;
-
-      let titleLang = "name";
-      if (appState.language.startsWith("ar")) titleLang = "arabicname";
-
-      elements.subTitle.innerHTML = chaptersInfo[preChapter - 1][titleLang];
-      elements.page.append(elements.subTitle);
-    }
-
-    elements.page.className = "page";
-    elements.page.append(elements.pageText);
-
-    preChapter = addTextToPage(pages[ind], elements, chaptersInfo, preChapter);
-
-    elements.pageNumber.classList.add("page-number");
-
-    elements.pageNumber.innerHTML = isNaN(+ind) ? btnNumber : ind;
-    elements.page.append(elements.pageNumber);
-    UI.articleContainer.append(elements.page);
-  });
-
-  hideLoading(body);
-}
-
-async function showHadithPart(lang, li, bookNumber) {
-  UI.articleContainer.innerHTML = "";
-  let sectionNumber = li.dataset.number;
-
-  showLoading(body);
-  scrollToTop();
-  UI.main.classList.add("hidden");
-  (UI.leftSidebar.classList.remove("active"),
-    (UI.articleContainer.dataset.number = bookNumber));
-  UI.articleContainer.dataset.key = "sections";
-
-  let bookDetails = await HadithService.getSpecificPart(
-    lang,
-    "sections",
-    sectionNumber,
+  UI.burgerMenuBtn.addEventListener("click", () =>
+    UI.rightSidebar.classList.add("active"),
   );
 
-  let hadiths = bookDetails.hadiths;
+  let deferredPrompt;
+  window.addEventListener("beforeinstallprompt", (e) => {
+    UI.downloadBtn.style.display = "block";
+    deferredPrompt = e;
+  });
 
-  let counter = 1;
-  let pages = {};
-  let arr = [];
+  UI.downloadBtn.addEventListener("click", async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    let { outcome } = await deferredPrompt.userChoice;
+    if (outcome !== "accepted") return;
+    deferredPrompt = null;
+    UI.downloadBtn.style.display = "none";
+  });
 
-  for (let i = 0; i < hadiths.length; i++) {
-    if (arr.length === 3) {
-      pages[counter] = arr;
-      arr = [];
-      counter++;
-    }
+  UI.searchBtn.addEventListener("click", () =>
+    UI.leftSidebar.classList.add("active"),
+  );
 
-    arr.push(hadiths[i]);
+  UI.home.addEventListener("click", () => {
+    scrollToTop();
+    UI.articleContainer.innerHTML = "";
+    UI.main.classList.remove("hidden");
+  });
+
+  UI.rightCloseBtn.addEventListener("click", () =>
+    UI.rightSidebar.classList.remove("active"),
+  );
+
+  UI.leftCloseBtn.addEventListener("click", () =>
+    UI.leftSidebar.classList.remove("active"),
+  );
+
+  UI.searchResultBox.addEventListener("click", () => {
+    let selector = document.querySelector(".book-detail-selectors .active");
+    let engName = selector?.dataset.engName;
+    const hasSubMenu =
+      engName == "verses" || engName == "sections" || engName == "Hadiths";
+    if (hasSubMenu) return;
+    UI.rightSidebar.classList.remove("active");
+  });
+
+  UI.siteLangAr.addEventListener("click", () => handleSiteLang(UI.siteLangAr));
+  UI.siteLangEn.addEventListener("click", () => handleSiteLang(UI.siteLangEn));
+
+  UI.fontSizeIncrease.addEventListener("click", () =>
+    handleFontSizeChange("increase"),
+  );
+  UI.fontSizeDecrease.addEventListener("click", () =>
+    handleFontSizeChange("decrease"),
+  );
+
+  UI.quranBtn.addEventListener("click", () => handleSelection(true));
+  UI.hadithBtn.addEventListener("click", () => handleSelection(false));
+
+  UI.chaptersList.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-number]");
+    if (!btn) return;
+    UI.articleContainer.dataset.key = appState.isItQuran ? "chapters" : "Books";
+    activateElement(UI.chaptersList.children, btn);
+    showBook(btn);
+  });
+
+  UI.inputSearch.addEventListener("input", (ele) => handleSearch(ele, 0));
+  UI.subInputSearch.addEventListener("input", (ele) => handleSearch(ele, 1));
+
+  UI.leftSidebar.addEventListener("click", () => {
+    let sb = UI.searchResultBox.querySelector(".sub-box");
+    if (!sb) UI.subInputSearch.classList.add("hidden");
+  });
+
+  document.addEventListener("click", (e) => saveBookmark(e));
+
+  UI.languageSelector.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-language]");
+    if (!btn) return;
+    activateElement(UI.languageSelector.children, btn);
+    changeLanguage(btn);
+  });
+
+  window.addEventListener("scroll", () => {
+    let percentage =
+      (window.scrollY * 100) / document.documentElement.scrollHeight;
+    UI.scrollTopBtn.style = `--scroll-percent:${percentage}%;`;
+    UI.scrollTopBtn.style.opacity = window.scrollY >= 200 ? "1" : "0";
+  });
+
+  UI.scrollTopBtn.addEventListener("click", scrollToTop);
+}
+
+function showMessage(msg) {
+  const el = document.createElement("div");
+  el.textContent = msg;
+  el.className = "toast";
+  document.body.appendChild(el);
+
+  setTimeout(() => el.remove(), 3000);
+}
+// ==================== Bootstrap ====================
+setupEventListeners();
+setupFontOptions();
+
+if (localStorage.siteLanguage == "ar" || !localStorage.siteLanguage) {
+  UI.siteLangAr.click();
+} else {
+  UI.siteLangEn.click();
+}
+
+if (localStorage.jsonFile == "Quran" || !localStorage.jsonFile) {
+  handleSelection(true).then(() => {
+    console.log("work");
+    getFromLocal(UI.languageSelector, localStorage.bookLanguage);
+  });
+} else if (localStorage.jsonFile == "Hadith") {
+  handleSelection(false);
+}
+
+function getFromLocal(parent, value) {
+  if (value) {
+    let activeEle = UI.fontSelector.querySelector(`[data-font = ${value}]`);
+
+    if (!activeEle) return;
+    activeEle.click();
+    activateElement(parent.children, activeEle);
+  }
+}
+
+// ==================== Bookmark ====================
+
+function getBookmarkName(data) {
+  return appState.siteLang === "ar"
+    ? data.arabicName || data.number
+    : data.latinName || data.number;
+}
+
+function saveBookmark(e) {
+  let bookmark = e.target.closest(".bookmark");
+  if (!bookmark) return;
+
+  const storageKey = appState.isItQuran ? "quranBookmark" : "hadithBookmark";
+
+  if (localStorage[storageKey]) {
+    const confirmed = confirm(
+      appState.siteLang === "ar"
+        ? "سيتم استبدال الإشارة المرجعية القديمة. هل تريد المتابعة؟"
+        : "This will replace your old bookmark. Do you want to continue?",
+    );
+    if (!confirmed) return;
   }
 
-  let title = createElements("h2").h2;
+  // remove old active
+  UI.articleContainer
+    .querySelector(".bookmark.active")
+    ?.classList.remove("active");
+  bookmark.classList.add("active");
 
-  if (appState.siteLang == "ar" || lang.startsWith("ara")) {
-    title.innerHTML = li.dataset.arabicName;
-  } else title.innerHTML = li.dataset.latinName;
+  // get book name in both languages
+  const h2 = UI.chaptersList.querySelector(".chapter.active h2");
 
-  for (let i in pages) {
-    let elements = createElements(
-      "page=div",
-      "titleBox=div",
-      "subTitle=h3",
-      "textBox=div",
-      "pageNumber=span",
-    );
+  const arabicName = h2?.dataset.arabicName;
+  const latinName = h2?.dataset.latinName;
 
-    if (i === "1") {
-      elements.titleBox.append(title);
-      elements.page.append(elements.titleBox);
-    }
+  localStorage[storageKey] = JSON.stringify({
+    key: UI.articleContainer.dataset.key,
+    number: UI.articleContainer.dataset.number,
+    pageNumber: bookmark
+      .closest(".page")
+      ?.querySelector(".page-number")
+      ?.innerHTML.trim(),
+    lang: appState.language,
+    bookNumber: appState.bookNumber,
+    arabicName,
+    latinName,
+  });
 
-    let hadiths = pages[i];
+  renderBookmarksInMenu();
+}
 
-    hadiths.forEach((hadith) => {
-      let { text, reference } = createElements("text=p", "reference=p");
-      text.innerHTML = hadith.text;
-      let word = "Hadith";
-      if (lang.startsWith("ar")) {
-        word = "حديث";
+function checkBookmark() {
+  const quranBookmark = localStorage.quranBookmark;
+  const hadithBookmark = localStorage.hadithBookmark;
+
+  if (appState.isItQuran && quranBookmark) {
+    showBookmarkBox(JSON.parse(quranBookmark), true);
+  } else if (!appState.isItQuran && hadithBookmark) {
+    showBookmarkBox(JSON.parse(hadithBookmark), false);
+  }
+}
+
+async function showBookmarkBox(data, isQuran) {
+  document.querySelector(".bookmark-box")?.remove();
+
+  const translations = await dataServer.translationsData;
+  const language = translations[appState.siteLang].UI;
+
+  const typeEle = isQuran
+    ? `<span data-i18n="UI.quranBtn">${language.quranBtn}</span>`
+    : `<span data-i18n="UI.hadithBtn">${language.hadithBtn}</span>`;
+
+  const nameKey = isQuran
+    ? `quran.chapters.${data.number - 1}.name`
+    : `hadith.booksName.${data.bookNumber - 1}`;
+
+  const box = createElements("div").div;
+  box.className = "bookmark-box";
+  box.style.direction = appState.dir;
+  box.innerHTML = `
+   <p>
+        ${typeEle} —
+    <span
+      data-arabic-name="${data.arabicName}"
+      data-latin-name="${data.latinName}">
+      ${getBookmarkName(data)}
+    </span>
+  </p>
+    <div class="bookmark-actions">
+      <button class="continue-btn" data-i18n="UI.continue">${language["continue"]}</button>
+      <button class="dismiss-btn" data-i18n="UI.close">${language["close"]}</button>
+    </div>
+  `;
+
+  document.body.append(box);
+
+  box.querySelector(".continue-btn").addEventListener("click", async () => {
+    box.remove();
+    await restoreBookmark({ ...data, isQuran });
+  });
+
+  box
+    .querySelector(".dismiss-btn")
+    .addEventListener("click", () => box.remove());
+}
+
+async function restoreBookmark(data) {
+  showLoading(body);
+
+  if (data.isQuran) {
+    appState.language = data.lang;
+    appState.isItQuran = true;
+    const quranData = await dataServer.quranData();
+    const chaptersInfo = quranData.chaptersInfo;
+    const title = chaptersInfo[data.number - 1][quranData.articleTitleLang];
+    createArticle([title, +data.number, chaptersInfo, quranData.quran]);
+  } else {
+    appState.bookNumber = data.bookNumber;
+    appState.isItQuran = false;
+    const hadithData = await dataServer.hadithData();
+    const translations = await dataServer.translationsData;
+    createTextBook(hadithData.bookDetails.sections, translations);
+  }
+
+  UI.main.classList.add("hidden");
+  hideLoading(body);
+
+  // scroll to bookmarked page and activate bookmark icon
+  setTimeout(() => {
+    UI.articleContainer.querySelectorAll(".page-number").forEach((page) => {
+      if (page.innerHTML.trim() === String(data.pageNumber).trim()) {
+        page.closest(".page").scrollIntoView({ behavior: "smooth" });
+        page
+          .closest(".page")
+          ?.querySelector(".bookmark")
+          ?.classList.add("active");
       }
-      reference.innerHTML = `${word} ${hadith.reference.hadith}`;
-      text.append(reference);
-      elements.textBox.append(text);
+    });
+  }, 300);
+}
+
+async function renderBookmarksInMenu() {
+  document.querySelectorAll(".bookmark-menu-item").forEach((el) => el.remove());
+
+  const translations = await dataServer.translationsData;
+  const language = translations[appState.siteLang].UI;
+  const bookmarkIcon = `<img src="./assets/images/icons/bookmark.svg" alt="bookmark"/>`;
+
+  const quranBookmark = localStorage.quranBookmark;
+  const hadithBookmark = localStorage.hadithBookmark;
+
+  if (quranBookmark) {
+    const data = JSON.parse(quranBookmark);
+    const li = createElements("li").li;
+    li.className = "bookmark-menu-item";
+    li.innerHTML = `
+        ${bookmarkIcon}
+        <span
+    data-arabic-name="${data.arabicName}"
+    data-latin-name="${data.latinName}">
+    ${getBookmarkName(data)}
+  </span>
+      `;
+
+    li.addEventListener("click", async () => {
+      appState.isItQuran = true;
+      localStorage.jsonFile = "Quran";
+      await handleSelection(true);
+      await restoreBookmark({ ...data, isQuran: true });
     });
 
-    elements.page.className = "page";
-    elements.pageNumber.classList.add("page-number");
-    elements.pageNumber.innerHTML = i;
-    elements.page.append(elements.textBox, elements.pageNumber);
-    UI.articleContainer.append(elements.page);
-  }
-  hideLoading(body);
-}
-
-function addTextToPage(pageData, elements, chaptersInfo, preChapter) {
-  pageData.forEach((ayahData) => {
-    let title = "";
-
-    if (ayahData.chapter !== preChapter && preChapter !== undefined) {
-      title = createElements("title=h2").title;
-      title.style.textAlign = "center";
-      title.style.margin = "20px auto -5px";
-      title.innerHTML = chaptersInfo[preChapter].arabicname;
-      preChapter = ayahData.chapter;
-    }
-
-    let versesNumber = document.createElement("span");
-    versesNumber.classList.add("verse-number");
-    versesNumber.innerHTML = ayahData.verse;
-    elements.pageText.append(title, ayahData.text, versesNumber);
-  });
-
-  return preChapter;
-}
-
-// create book box
-async function createChapterBox(allChapters, translations) {
-  let isItArabic = appState.siteLang.includes("ar");
-  appState.siteLang = isItArabic ? "ar" : "en";
-  let name = isItArabic ? "arabicname" : "name";
-
-  UI.chaptersList.innerHTML = "";
-  allChapters.forEach((chapter, ind) => {
-    let elements = createElements(
-      "chapterBox=div",
-      "div",
-      "span",
-      "spanNum=span",
-      "img",
-      "h2",
-    );
-
-    if (appState.isItQuran) {
-      let span = createElements("span").span;
-      span.dataset.i18n = "UI.ayah";
-      span.innerHTML = " اية";
-      if (appState.siteLang == "en") {
-        elements.span.style.left = "auto";
-        elements.span.style.right = "13px";
-      }
-      elements.span.append(chapter.verses.length, span);
-      elements.h2.innerHTML = chapter[name];
-    } else {
-      elements.h2.innerHTML =
-        translations[appState.siteLang].hadith.booksName[ind];
-      elements.h2.dataset.i18n = "hadith.booksName." + ind;
-    }
-
-    elements.chapterBox.className = "chapter";
-    elements.chapterBox.dataset.number = ind + 1;
-    elements.spanNum.innerHTML = ind + 1;
-    elements.img.src = "./assets/images/icons/aya-num.svg";
-    elements.div.append(elements.spanNum, elements.img);
-    elements.chapterBox.append(elements.div, elements.h2, elements.span);
-    UI.chaptersList.append(elements.chapterBox);
-  });
-}
-
-async function changeLanguage(btn) {
-  let translations = await dataServer.translationsData;
-  let dataDetails, articleTitleLang;
-
-  localStorage.languageDirection = appState.direction;
-
-  let isItArabic;
-  if (appState.isItQuran) {
-    appState.language = btn.dataset.language;
-    localStorage.bookLanguage = appState.language;
-    appState.direction = btn.dataset.direction;
-
-    isItArabic = appState.language.startsWith("ara");
-    appState.siteLang = isItArabic ? "ar" : "en";
-    articleTitleLang = isItArabic ? "arabicname" : "name";
-
-    dataDetails = await dataServer.quranData();
-  } else {
-    appState.bookNumber = UI.articleContainer.dataset.number;
-    appState.hadithLang[appState.bookNumber - 1] = btn.dataset.language;
-    const hadithLang = JSON.parse(localStorage.hadithLang || "{}");
-    hadithLang[appState.bookNumber - 1] = btn.dataset.language;
-    localStorage.hadithLang = JSON.stringify(hadithLang);
-
-    let hadithData = await dataServer.hadithData(
-      appState.bookNumber,
-      appState.hadithLang[appState.bookNumber - 1],
-    );
-
-    dataDetails = hadithData.bookDetails;
-    isItArabic = dataDetails.isArabicLang;
-    appState.siteLang = dataDetails.isArabicLang ? "ar" : "en";
+    UI.subMenu.append(li);
   }
 
-  let dir = isItArabic ? "rtl" : "ltr";
-  UI.articleContainer.style.direction = dir;
-  UI.quoteText.parentElement.style.direction = dir;
+  if (hadithBookmark) {
+    const data = JSON.parse(hadithBookmark);
+    const li = createElements("li").li;
+    li.className = "bookmark-menu-item";
 
-  generateQuoteFromJson(dataDetails, translations);
-  translateArticleIfExists(dataDetails, articleTitleLang, translations, btn);
-}
+    li.innerHTML = `
+            ${bookmarkIcon}
+             <span
+    data-arabic-name="${data.arabicName}"
+    data-latin-name="${data.latinName}">
+    ${getBookmarkName(data)}
+  </span>
+          `;
+    li.addEventListener("click", async () => {
+      appState.isItQuran = false;
+      localStorage.jsonFile = "Hadith";
+      await handleSelection(false);
+      await restoreBookmark({ ...data, isQuran: false });
+    });
 
-/* ==================== Generate Quote ==================== */
-const counter = UI.shrinkingBar.querySelector("div");
-
-async function generateQuoteFromJson(data, translations) {
-  await generate(data, translations);
-
-  if (appState.generateHandler) {
-    UI.generateBtn.removeEventListener("click", appState.generateHandler);
+    UI.subMenu.append(li);
   }
-
-  if (appState.autoGenerateHandler) {
-    UI.autoGenerateBtn.removeEventListener(
-      "click",
-      appState.autoGenerateHandler,
-    );
-  }
-
-  appState.generateHandler = () => {
-    stopAutoGenerating();
-    generate(data, translations);
-  };
-
-  appState.autoGenerateHandler = () => autoGenerateQuote(data, translations);
-
-  UI.generateBtn.addEventListener("click", appState.generateHandler);
-  UI.autoGenerateBtn.addEventListener("click", appState.autoGenerateHandler);
 }
-
-async function autoGenerateQuote(data, translations) {
-  UI.pausePlayIcon.classList.toggle("pause-play");
-
-  if (appState.isGenerating) {
-    stopAutoGenerating();
-    return;
-  }
-
-  appState.isGenerating = true;
-  await startCycle(data, translations);
-}
-
-async function startCycle(data, translations) {
-  await generate(data, translations);
-
-  // reading time is fresh after generate
-  const readingTime = getReadingTime(UI.quoteText.innerHTML);
-
-  restartAnimation(readingTime);
-  startCountdown(readingTime);
-
-  clearTimeout(appState.intervalId);
-  appState.intervalId = setTimeout(async () => {
-    if (!appState.isGenerating) return;
-    await startCycle(data, translations);
-  }, readingTime * 1000);
-}
-
-function restartAnimation(readingTime) {
-  UI.shrinkingBar.classList.remove("running");
-  void UI.shrinkingBar.offsetWidth;
-  UI.shrinkingBar.style.animationDuration = readingTime + "s";
-  UI.shrinkingBar.classList.add("running");
-}
-
-function startCountdown(readingTime) {
-  clearInterval(appState.countdownId);
-  counter.innerHTML = readingTime;
-
-  appState.countdownId = setInterval(() => {
-    readingTime--;
-    counter.innerHTML = readingTime;
-    if (readingTime <= 0) clearInterval(appState.countdownId);
-  }, 1000);
-}
-
-function stopAutoGenerating() {
-  clearTimeout(appState.intervalId);
-  clearInterval(appState.countdownId);
-  UI.shrinkingBar.classList.remove("running");
-  counter.innerHTML = "";
-  appState.isGenerating = false;
-}
-
-async function generate(data, translations) {
-  UI.quoteText.style.opacity = 0;
-  UI.quoteDetails.style.opacity = 0;
-  showLoading(UI.quoteText.parentElement);
-
-  await new Promise((resolve) => setTimeout(resolve, 500));
-
-  let randomText;
-
-  if (appState.isItQuran) {
-    randomText = QuranService.getRandomVerse(data);
-    createQuranQuote(randomText);
-  } else {
-    randomText = HadithService.getRandomHadith(data.hadiths);
-    createHadithQuote(randomText, translations);
-  }
-
-  hideLoading(UI.quoteText.parentElement);
-  UI.quoteText.style.opacity = 1;
-  UI.quoteDetails.style.opacity = 1;
-
-  return randomText;
-}
-
-function createQuranQuote(randomAyah) {
-  UI.quoteText.innerHTML = randomAyah.verseText;
-  UI.quoteDetails.innerHTML = `${randomAyah.ayah} ${randomAyah.verseNumber} ${randomAyah.surah} ${randomAyah.surahName}`;
-}
-
-function createHadithQuote(randomHadith, translations) {
-  UI.quoteText.innerHTML = randomHadith.hadith;
-  let isArabic = appState.hadithLang[appState.bookNumber - 1].startsWith("ar");
-  const bookName =
-    translations[isArabic ? "ar" : "en"].hadith.booksName[
-      appState.bookNumber - 1
-    ];
-
-  const hadith = isArabic ? "حديث" : "Hadith";
-  UI.quoteDetails.innerHTML = `${hadith} ${randomHadith.hadithNumber}, ${bookName}`;
-}
-
-function getReadingTime(text) {
-  const wordsPerMinute = appState.siteLang === "ar" ? 200 : 250;
-  const words = text.trim().split(/\s+/).length;
-  const seconds = Math.ceil((words / wordsPerMinute) * 60);
-  return Math.max(seconds, 3);
-}
-
-setTimeout(() => hideLoading(body), 3000);
-
-// UI.scrollTopBtn.addEventListener("click", showNotification);
-// function showNotification() {
-//   if (window.PushManager) {
-//     navigator.serviceWorker.ready.then((res) => {
-//       res.showNotification("Welcome!", {
-//         body: "Let us continue reading!",
-//         badge: "./assets/images/icons/icon-192x192.png",
-//         icon: "./assets/images/icons/icon-512x512.png",
-//         vibrate: [200, 100, 200],
-//         requireInteraction: true,
-//         actions: [
-//           { action: "open", title: "افتح" },
-//           { action: "close", title: "أغلق" },
-//         ],
-//       });
-//     });
-//   }
-// }

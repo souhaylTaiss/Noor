@@ -14,7 +14,11 @@
       "websiteLanguage": "لغة الموقع",
       "search": "بحث",
       "books": "الكتب",
-      "download": "تحميل"
+      "download": "تحميل",
+      "chapter": "سورة",
+      "book": "الكتاب",
+      "continue": "متابعة القراءة",
+      "close": "إغلاق"
     },
     "hadith": {
       "booksName": {
@@ -217,7 +221,7 @@
         "كتاب الزهد"
     ],
     [
-        "كتاب وقوت الصلاة",
+        "كتاب وقت الصلاة",
         "كتاب الطهارة",
         "كتاب الصلاة",
         "كتاب السهو في الصلاة",
@@ -466,7 +470,11 @@
       "websiteLanguage": "Website language",
       "search": "Search",
       "books": "Books",
-      "download": "Download"
+      "download": "Download",
+      "chapter": "Chapter",
+      "book": "Book",
+      "continue": "Continue Reading",
+      "close": "Close"
     },
     "hadith": {
       "booksName": {

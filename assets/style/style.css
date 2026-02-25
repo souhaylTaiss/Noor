@@ -1,11 +1,12 @@
+/* ==================== Font ====================  */
 @font-face {
   font-family: "default";
   src:
-    url("https://cdn.jsdelivr.net/gh/fawazahmed0/quran-api@1/fonts/amiri-bold1.woff2")
-      format("woff2"),
-    url("https://cdn.jsdelivr.net/gh/fawazahmed0/quran-api@1/fonts/amiri-bold1.woff")
-      format("woff");
+    url("https://cdn.jsdelivr.net/gh/fawazahmed0/quran-api@1/fonts/amiri-bold1.woff2") format("woff2"),
+    url("https://cdn.jsdelivr.net/gh/fawazahmed0/quran-api@1/fonts/amiri-bold1.woff") format("woff");
 }
+
+/* ==================== Reset ====================  */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -14,6 +15,20 @@
 html {
   scroll-behavior: smooth;
 }
+input,
+button {
+  border: none;
+  outline: none;
+}
+ul,
+li {
+  list-style: none;
+}
+a {
+  text-decoration: none;
+}
+
+/* ==================== Base / Body ==================== */
 body {
   min-height: 100vh;
   display: flex;
@@ -22,12 +37,52 @@ body {
   background-repeat: no-repeat;
   background-attachment: fixed;
   background-size: cover;
+  gap: 10px;
 }
 .font-family {
   font-family: "default", sans-serif;
   line-height: 2;
 }
 
+/* ==================== Container (Responsive) ==================== */
+
+/* Default — Desktop (>= 1200px) */
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+/* Small Desktop / Laptops (1024px to 1200px) */
+@media (1024px <= width < 1200px) {
+  .container {
+    max-width: 1000px;
+    padding: 0 15px;
+  }
+}
+/* Tablets (768px to 1024px) */
+@media (768px <= width < 1024px) {
+  .container {
+    max-width: 90%;
+    padding: 0 10px;
+  }
+}
+/* Mobile (480px to 768px) */
+@media (480px <= width < 768px) {
+  .container {
+    max-width: 95%;
+    padding: 0 8px;
+  }
+}
+/* Extra Small Mobile (< 480px) */
+@media (width < 480px) {
+  .container {
+    max-width: 100%;
+    padding: 0 10px;
+  }
+}
+
+/* ==================== Loading ==================== */
 @keyframes pulse-ring {
   0% {
     transform: scale(0.7);
@@ -43,32 +98,37 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
+  flex-direction: column;
   position: absolute;
   inset: 0;
   z-index: 9999;
+  direction: ltr;
 }
-
 .load-page {
   width: 100vw;
   height: 100vh;
   background-color: white;
 }
-
 .loading-ring {
   position: relative;
   width: 50px;
   height: 50px;
 }
-
+.loading p {
+  font-size: 20px;
+  margin-top: 8px;
+  color: #979797;
+}
 .loading-ring::before {
   content: "";
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  animation: pulse-ring 0.8s ease-out infinite alternate;
   border: 4px solid rgb(0, 227, 11);
+  animation: pulse-ring 0.8s ease-out infinite alternate;
 }
 
+/* ==================== Overlay ==================== */
 .overlay {
   width: 100%;
   height: 100vh;
@@ -78,60 +138,10 @@ body {
   background-color: rgba(37, 36, 36, 0.42);
   z-index: -9999;
 }
-input,
-button {
-  border: none;
-  outline: none;
-}
-ul,
-li {
-  list-style: none;
-}
-a {
-  text-decoration: none;
-}
-/* Default for Desktop (>= 1200px) */
-.container {
-  width: 100%;
-  max-width: 1200px; /* Max width for larger screens */
-  margin: 0 auto;
-  padding: 0 20px;
-}
 
-/* Small Desktop / Laptops (1024px to 1200px) */
-@media (1024px <= width < 1200px) {
-  .container {
-    max-width: 1000px;
-    padding: 0 15px;
-  }
-}
-
-/* Tablets (768px to 1024px) */
-@media (768px <= width < 1024px) {
-  .container {
-    max-width: 90%; /* Responsive percentage width */
-    padding: 0 10px;
-  }
-}
-
-/* Mobile (480px to 768px) */
-@media (480px <= width < 768px) {
-  .container {
-    max-width: 95%;
-    padding: 0 8px;
-  }
-}
-
-/* Extra Small Mobile (< 480px) */
-@media (width < 480px) {
-  .container {
-    max-width: 100%;
-    padding: 0 10px;
-  }
-}
-
+/* ==================== Header / Navbar ==================== */
 header {
-  margin-bottom: 90px;
+  margin-bottom: min(7vw, 90px);
 }
 nav {
   width: 100%;
@@ -157,36 +167,68 @@ nav .container > ul li {
   font-size: 23px;
   position: relative;
 }
+
+/* Dropdown sub-list */
 nav .container > ul .sub-list {
   position: absolute;
-  padding: 10px 16px;
+  padding: 10px;
+  padding-bottom: 0;
   border-radius: 4px;
   background-color: white;
-  min-width: 200px;
+  min-width: 300px;
   box-shadow: 2px 2px 10px #1a1a1a61;
-  transition: .3s;
+  transition: 0.3s;
   opacity: 0;
   top: 65px;
+  pointer-events: none;
+  inset-inline-end: 0; /* RTL/LTR aware positioning */
 }
 nav .container > ul li:first-child:focus-within .sub-list {
-  top: 58px;
+  top: 50px;
   opacity: 1;
+  pointer-events: all;
+}
+nav .container > ul li:first-child {
+  filter: grayscale(1);
+}
+nav .container > ul li:first-child img {
+  margin-top: 5px;
+}
+nav .container > ul li:first-child:hover {
+  filter: grayscale(0);
 }
 nav .container > ul .sub-list li {
   display: grid;
-  grid-template-columns: 40px 1fr;
+  grid-template-columns: auto 1fr;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 5px;
-  font-size: 18px;
+  gap: 4px;
+  margin-bottom: 10px;
+  font-size: 20px;
+  padding: 2px;
 }
-
+nav .container > ul .sub-list li span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 150px;
+}
+nav .container > ul .sub-list li:hover {
+  color: #00796b;
+}
+nav .container > ul .sub-list img {
+  width: 22px;
+  filter: grayscale(1);
+  transition: 0.3s;
+}
+nav .container > ul .sub-list li:hover img {
+  filter: grayscale(0);
+}
 nav .container button {
   font-size: 19px;
-  transition: 0.3s;
-  margin: 0 3px;
   background-color: transparent;
+  margin: 0 3px;
   cursor: pointer;
+  transition: 0.3s;
 }
 nav .container ul button.active,
 .home.active {
@@ -196,11 +238,13 @@ nav .container ul button:hover,
 .home:hover {
   color: #009688;
 }
+
+/* Download button hidden until PWA install is available */
 nav .container ul button[value="download"] {
   display: none;
 }
 
-/* Article */
+/* ==================== Article (book content) ==================== */
 article {
   flex: 1;
   margin-top: 20px;
@@ -214,12 +258,92 @@ article .page {
   width: 100%;
   background-color: white;
   border-radius: 3px;
-  padding: clamp(42px, 7vw, 60px);
+  padding: clamp(22px, 7vw, 60px);
   margin: 30px auto;
   text-align: justify;
   line-height: 2;
   position: relative;
 }
+
+/* Bookmark resume popup */
+.bookmark-box {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  padding: 20px 30px;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+  z-index: 9999;
+  text-align: center;
+  animation: slideUp 0.3s ease;
+  font-size: min(7vw, 23px);
+  min-width: 275px;
+}
+.bookmark-box p span:last-child {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  width: 110px;
+  display: inline-block;
+}
+.bookmark-box button {
+  padding: 8px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  background: #dcdcdc;
+  margin-top: 10px;
+  margin-right: 8px;
+  transition: 0.3s;
+}
+.bookmark-box button.continue-btn {
+  background: #00796b;
+  color: white;
+}
+.bookmark-box button.dismiss-btn:hover {
+  background: #00796b;
+  color: white;
+}
+/* Swap button styles when hovering dismiss */
+.bookmark-box:has(.dismiss-btn:hover) .continue-btn {
+  background: #dcdcdc;
+  color: black;
+}
+@keyframes slideUp {
+  from {
+    transform: translateX(-50%) translateY(100px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Bookmark icon on each page */
+article .page .bookmark {
+  position: absolute;
+  top: -7px;
+  right: 10px;
+  opacity: 0;
+  cursor: pointer;
+  transition: 0.3s;
+}
+article .page .bookmark.active {
+  opacity: 1;
+}
+article .page:hover .bookmark.active {
+  opacity: 1;
+}
+article .page:hover .bookmark {
+  opacity: 0.5;
+}
+article .page .bookmark:hover {
+  opacity: 1;
+}
+
 article .page:first-child div:first-child {
   text-align: center;
   margin-bottom: 35px;
@@ -231,20 +355,21 @@ article .page .title-box {
   margin-bottom: 33px;
   text-align: center;
 }
-/* article .page .title-box h2 {
-  transform: translateY(-26px);
-} */
 article .page h3 {
   text-align: center;
 }
 article .page > p {
   text-align: justify;
 }
+
+/* Hadith reference text */
 article .page p p {
   text-align: end;
   color: gray;
   transform: translateY(-13px);
 }
+
+/* Verse number icon inside quran text */
 article .page > p .verse-number {
   background-image: url("../images/icons/verseIcon.svg");
   background-repeat: no-repeat;
@@ -269,13 +394,14 @@ article .page .page-number {
   width: 100%;
 }
 
-/* Quote generator */
+/* ==================== Quote Generator ==================== */
+
+/* Hide main section when article is open */
 main.hidden {
   overflow: hidden;
   width: 0;
   height: 0;
 }
-
 main .quote {
   background-color: white;
   min-height: 160px;
@@ -284,34 +410,31 @@ main .quote {
   font-size: 22px;
   margin-bottom: 20px;
 }
-
 .quote p {
   transition: opacity 0.3s ease;
 }
 
-/* Scrollbar Track */
+/* Custom scrollbar for quote box */
 .quote::-webkit-scrollbar {
-  width: 4px; /* For vertical scrollbar */
+  width: 4px;
 }
-
-/* Scrollbar Thumb */
 .quote::-webkit-scrollbar-thumb {
   background: #00796b;
 }
-
-/* Scrollbar Track background */
 .quote::-webkit-scrollbar-track {
   background: transparent;
 }
+
+/* Quote source/details line */
 .quote > div:first-of-type {
   font-size: 17px;
   color: rgb(137, 137, 136);
-  left: 0px;
-  bottom: 36px;
   display: flex;
   flex-direction: row-reverse;
   transition: opacity 0.3s ease;
 }
+
+/* CSS custom property for conic-gradient animation */
 @property --percent {
   syntax: "<percentage>";
   initial-value: 0%;
@@ -322,6 +445,8 @@ main .quote {
   initial-value: 5s;
   inherits: false;
 }
+
+/* Circular countdown timer */
 .quote .shrinking-bar {
   width: 45px;
   height: 45px;
@@ -338,23 +463,19 @@ main .quote {
   padding: 5px;
   opacity: 0;
 }
-
 .quote .shrinking-bar.running {
   animation: timer var(--seconds) infinite linear;
   opacity: 1;
 }
-
 @keyframes timer {
   to {
     --percent: 100%;
   }
 }
-
 .quote .shrinking-bar .circle {
   width: 35px;
   height: 35px;
   background: white;
-  position: relative;
   border-radius: 50%;
   font-size: 17px;
   color: #939393;
@@ -363,6 +484,7 @@ main .quote {
   justify-content: center;
 }
 
+/* Generator buttons */
 .quote-generator .generator {
   width: fit-content;
   margin: 0 auto;
@@ -377,9 +499,9 @@ main .quote {
   border-radius: 10px;
   padding: 2px 6px;
   font-size: 18px;
-  transition: 0.3s;
   margin: 0 3px;
   cursor: pointer;
+  transition: 0.3s;
 }
 .quote-generator .generator .btn:hover {
   background-color: #009688;
@@ -394,8 +516,9 @@ main .quote {
   margin-right: 4px;
   background-image: url(../images/icons/play-circle.svg);
   background-repeat: no-repeat;
-  width: 34px;
-  height: 34px;
+  background-size: contain;
+  width: 25px;
+  height: 25px;
   transition: 0.3s;
 }
 .quote-generator .generator .btn:hover span {
@@ -408,7 +531,7 @@ main .quote {
   background-image: url(../images/icons/pause-circle-white.svg);
 }
 
-/* Quran chapters-container */
+/* ==================== Chapters Grid ==================== */
 .chapters-container {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(225px, 1fr));
@@ -423,8 +546,8 @@ main .quote {
   display: flex;
   align-items: center;
   cursor: pointer;
-  transition: 0.3s;
   position: relative;
+  transition: 0.3s;
 }
 .chapters-container .chapter:hover {
   background-color: #00897b;
@@ -472,33 +595,34 @@ main .quote {
   color: #009688;
 }
 
-/* Sidebar */
+/* ==================== Sidebars ==================== */
 aside {
   position: fixed;
   top: 0;
   width: min(100%, 400px);
   height: 100%;
   backdrop-filter: blur(12px);
-  background:linear-gradient(#a4a4a46b, #10632f5c);;
-  transition: 0.3s;
+  background: linear-gradient(#a4a4a46b, #10632f5c);
   z-index: 9999;
   box-shadow:
     0px 10px #2222225c,
     -4px 0 10px #2222225c;
   overflow: hidden auto;
+  transition: 0.3s;
 }
+
+/* Settings sidebar — slides in from right */
 aside.settings {
   right: -400px;
 }
-
-/* Scrollbar Track */
 aside.settings::-webkit-scrollbar {
-  width: 0px; /* For vertical scrollbar */
+  width: 0px;
 }
-
 aside.active {
   right: 0;
 }
+
+/* Sticky sidebar header */
 aside .title {
   width: 100%;
   display: flex;
@@ -511,13 +635,17 @@ aside .title {
   z-index: 9999;
   background: white;
   box-shadow: 0 2px 10px #1414144a;
+  direction: ltr;
 }
 aside > div:last-child {
   padding: 15px;
 }
+
+/* Flip direction for RTL layout */
 .direction {
   flex-direction: row-reverse;
 }
+
 aside .title h2 {
   padding: 5px 0;
   font-size: 34px;
@@ -527,8 +655,8 @@ aside .title .close-btn {
   height: 30px;
   padding: 5px;
   cursor: pointer;
-  transition: 0.3s;
   border-radius: 3px;
+  transition: 0.3s;
 }
 aside .title .close-btn:hover {
   background: rgb(240, 72, 72);
@@ -536,18 +664,91 @@ aside .title .close-btn:hover {
 aside .title .close-btn img {
   width: 100%;
 }
-aside > hr {
-  margin-bottom: 30px;
-  border: none;
-  height: 2px;
-  background: white;
-}
 aside .box {
   background-color: white;
   border-radius: 4px;
   padding: 10px;
   margin-bottom: 15px;
 }
+aside .box h3 {
+  font-size: 25px;
+  padding: 10px 0;
+  text-align: center;
+}
+aside .box hr {
+  border: none;
+  background: #d0cccc;
+  height: 2px;
+  margin-top: 5px;
+  margin-bottom: 15px;
+}
+aside .box > span {
+  font-size: 14px;
+  color: #5b5b5b;
+}
+aside .box ul p {
+  font-size: 18px;
+  color: #7a7a7a;
+  text-align: center;
+}
+aside .box ul li {
+  border-radius: 5px;
+  padding: 7px;
+  background-color: #e3e1e1;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+aside .box ul li span {
+  color: rgb(153, 152, 152);
+  font-size: 12px;
+}
+aside .box ul li:hover {
+  background-color: #26a69a;
+  color: white;
+  transform: translateZ(12px);
+  box-shadow:
+    2px 2px 12px rgba(180, 179, 179, 0.597),
+    -2px -2px 12px rgba(176, 175, 175, 0.597);
+}
+aside .box ul li.active {
+  background-color: #00897b;
+  color: white;
+}
+
+/* Settings sidebar list */
+aside.settings .box ul {
+  overflow-y: scroll;
+  height: 160px;
+  direction: ltr;
+  padding-right: 3px;
+  position: relative;
+  scroll-behavior: smooth;
+}
+aside.settings .box .website-language-box {
+  height: auto;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+aside.settings .box .website-language-box li {
+  padding: 8px 22px;
+  text-align: end;
+  font-size: 18px;
+}
+
+/* Custom scrollbar for sidebar lists */
+aside.scroll .box ul::-webkit-scrollbar {
+  width: 3px;
+}
+aside.scroll .box ul::-webkit-scrollbar-thumb {
+  background: #118be6;
+}
+aside.scroll .box ul::-webkit-scrollbar-track {
+  background: #e3e1e1;
+}
+
+/* Font size controls */
 .font-size-range {
   display: flex;
   justify-content: space-between;
@@ -568,6 +769,7 @@ aside .box {
 .font-size-range div:hover {
   background-color: #009688;
 }
+/* Horizontal bar (shared by both + and -) */
 .font-size-range div::before,
 .increase::after {
   content: "";
@@ -581,6 +783,7 @@ aside .box {
   transform: translate(-50%, -50%);
   transition: 0.3s;
 }
+/* Vertical bar (only for increase button) */
 .font-size-range .increase::after {
   transform: rotate(-90deg) translate(1px, -12px);
 }
@@ -588,88 +791,8 @@ aside .box {
 div:hover::after {
   background-color: white;
 }
-aside .box > span {
-  font-size: 14px;
-  color: #5b5b5b;
-}
-aside .box h3 {
-  font-size: 25px;
-  padding: 10px 0;
-  text-align: center;
-}
-aside .box hr {
-  border: none;
-  background: #d0cccc;
-  height: 2px;
-  margin-top: 5px;
-  margin-bottom: 15px;
-}
-aside.settings .box ul {
-  overflow-y: scroll;
-  height: 160px;
-  direction: ltr;
-  padding-right: 3px;
-  position: relative;
-  scroll-behavior: smooth;
-}
 
-aside.settings .box .website-language-box {
-  height: auto;
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-}
-
-aside.settings .box .website-language-box li {
-  padding: 8px 22px;
-  text-align: end;
-  font-size: 18px;
-}
-/* Scrollbar Track */
-aside.scroll .box ul::-webkit-scrollbar {
-  width: 3px; /* For vertical scrollbar */
-}
-
-/* Scrollbar Thumb */
-aside.scroll .box ul::-webkit-scrollbar-thumb {
-  background: #118be6;
-}
-
-/* Scrollbar Track background */
-aside.scroll .box ul::-webkit-scrollbar-track {
-  background: #e3e1e1;
-}
-aside .box ul li {
-  border-radius: 5px;
-  padding: 7px;
-  background-color: #e3e1e1;
-  margin-bottom: 8px;
-  cursor: pointer;
-  transition: 0.3s;
-}
-aside .box ul p {
-  font-size: 18px;
-  color: #7a7a7a;
-  text-align: center;
-}
-aside .box ul li span {
-  color: rgb(153, 152, 152);
-  font-size: 12px;
-}
-aside .box ul li:hover {
-  background-color: #26a69a;
-  color: white;
-  transform: translateZ(12px);
-  box-shadow:
-    2px 2px 12px rgba(180, 179, 179, 0.597),
-    -2px -2px 12px rgba(176, 175, 175, 0.597);
-}
-aside .box ul li.active {
-  background-color: #00897b;
-  color: white;
-}
-
-/* Second aside */
+/* Book details sidebar — slides in from left */
 aside.book-details {
   right: auto;
   left: -400px;
@@ -684,7 +807,6 @@ aside.book-details.active {
   grid-template-columns: repeat(auto-fit, minmax(55px, 1fr));
   text-align: center;
 }
-
 .book-details .book-detail-selectors li {
   margin-bottom: 0;
 }
@@ -712,17 +834,12 @@ aside.book-details.active {
   scroll-behavior: smooth;
   min-width: 70px;
 }
+
+/* Highlight matched search text */
 .book-details .details ul li span {
   font-size: initial;
   color: initial;
   background-color: yellow;
-}
-.book-details .details ul {
-  overflow-y: scroll;
-  height: 100%;
-  padding: 0 10px;
-  position: relative;
-  scroll-behavior: smooth;
 }
 .book-details .search-field input {
   height: 38px;
@@ -740,6 +857,7 @@ aside.book-details.active {
   margin: 0;
 }
 
+/* ==================== Scroll To Top Button ==================== */
 @property --scroll-percent {
   syntax: "<percentage>";
   initial-value: 44%;
@@ -749,7 +867,7 @@ aside.book-details.active {
   width: 40px;
   height: 40px;
   background-color: #d4d4d4;
-   background-image: conic-gradient(
+  background-image: conic-gradient(
     #04d600,
     #04d600 var(--scroll-percent),
     transparent var(--scroll-percent)
@@ -758,14 +876,13 @@ aside.book-details.active {
   position: fixed;
   right: 10px;
   bottom: 10px;
-  transition: 0.3s opacity;
   display: flex;
   align-items: center;
   justify-content: center;
-  line-height: 30px;
-  opacity: 0;
-  transition: .3s;
   cursor: pointer;
+  opacity: 0;
+  z-index: 999;
+  transition: 0.3s;
 }
 .scroll-top div {
   width: 32px;
@@ -773,12 +890,68 @@ aside.book-details.active {
   border-radius: 50%;
   background-color: white;
   text-align: center;
+  filter: grayscale(1);
+}
+.scroll-top:hover div {
+  filter: grayscale(0);
 }
 
+/* ==================== Footer ==================== */
 footer {
   background: #2c2c2c;
-  color: white;
+  color: #dddddd;
   text-align: center;
   padding: 20px;
   margin-top: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-flow: row-reverse;
+  gap: 15px;
+  font-size: 17px;
+}
+footer div {
+  display: flex;
+}
+footer a {
+  display: block;
+  padding: 6px;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  overflow: hidden;
+  transition: 0.3s;
+}
+footer img {
+  width: 25px;
+  filter: grayscale(1);
+  transition: inherit;
+}
+footer a:hover {
+  background: #000000;
+  box-shadow: 0 0 5px greenyellow;
+}
+footer a:hover img {
+  filter: grayscale(0);
+}
+
+/* ==================== Toast Notification ==================== */
+.toast {
+  position: fixed;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  z-index: 999;
+  background: white;
+  box-shadow: 0 0 10px rgba(34, 34, 34, 0.39);
+  opacity: 0;
+  animation: show 0.3s linear forwards;
+}
+@keyframes show {
+  to {
+    opacity: 1;
+  }
 }

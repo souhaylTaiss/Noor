@@ -5,19 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="./assets/style/style.css" />
     <link rel="manifest" href="manifest.json" />
-    <link
-      rel="shortcut icon"
-      href="./assets/images/icons/icon-512x512.jpg"
-      type="image/jpg"
-    />
+    <link rel="shortcut icon" href="./assets/images/icons/icon-192x192.png" type="image/jpg" />
     <title>Noor | Quran and Hadith</title>
   </head>
 
   <body>
+
+    <!-- ==================== Header / Navbar ==================== -->
     <header>
       <nav>
         <div class="container">
           <ul>
+            <!-- Burger menu with dropdown -->
             <li tabindex="0">
               <img src="./assets/images/icons/menu.svg" alt="menu" />
               <ul class="sub-list">
@@ -26,7 +25,7 @@
                   <span data-i18n="UI.books">الكتب</span>
                 </li>
                 <li class="menu">
-                  <img src="./assets/images/icons/menu.svg" alt="menu" />
+                  <img src="./assets/images/icons/setting.svg" alt="menu" />
                   <span data-i18n="UI.settings">الاعدادات</span>
                 </li>
                 <li class="search-btn">
@@ -34,43 +33,45 @@
                   <span data-i18n="UI.search">بحث</span>
                 </li>
               </ul>
+            </li>
 
+            <!-- Nav buttons -->
+            <li>
+              <button type="button" value="quran" data-i18n="UI.quranBtn">القران</button>
             </li>
             <li>
-              <button type="button" value="quran" data-i18n="UI.quranBtn">
-                القران
-              </button>
+              <button type="button" value="hadith" data-i18n="UI.hadithBtn">الحديث</button>
             </li>
             <li>
-              <button type="button" value="hadith" data-i18n="UI.hadithBtn">
-                الحديث
-              </button>
-            </li>
-            <li>
-              <button type="button" value="download" data-i18n="UI.download">
-                تنزيل
-              </button>
+              <button type="button" value="download" data-i18n="UI.download">تنزيل</button>
             </li>
           </ul>
+
+          <!-- Logo -->
           <div>
-            <a href="index.html"
-              ><img src="./assets/images/icons/logo.svg" alt=""
-            /></a>
+            <a href="index.html">
+              <img class="logo" src="./assets/images/icons/logo.svg" alt="Noor Logo" />
+            </a>
           </div>
         </div>
       </nav>
     </header>
 
+    <!-- ==================== Article (book content renders here) ==================== -->
     <article>
       <div class="container font-family font-size"></div>
     </article>
 
+    <!-- ==================== Main / Home Section ==================== -->
     <main>
       <div class="container">
+
+        <!-- Quote generator -->
         <div class="quote-generator font-family">
           <div class="quote font-size">
             <p></p>
             <div><span></span> <span></span></div>
+            <!-- Animated progress bar for auto-generate countdown -->
             <div class="shrinking-bar"><div class="circle"></div></div>
           </div>
 
@@ -80,26 +81,25 @@
               <div data-i18n="UI.autoSuggestBtn">إقتراح آلي</div>
               <span></span>
             </div>
-
           </div>
         </div>
 
-        <div
-          class="chapters-container font-family"
-          id="chapters-container"
-        ></div>
+        <!-- Chapters / books list -->
+        <div class="chapters-container font-family" id="chapters-container"></div>
       </div>
     </main>
 
+    <!-- ==================== Settings Sidebar (right) ==================== -->
     <aside class="settings scroll">
       <div class="title">
         <h2 data-i18n="UI.settings">الاعدادات</h2>
         <div class="close-btn">
-          <img src="./assets/images/icons/close-icon.svg" alt="" />
+          <img src="./assets/images/icons/close-icon.svg" alt="close" />
         </div>
       </div>
 
       <div>
+        <!-- Site language selector -->
         <div class="box">
           <h3 data-i18n="UI.websiteLanguage">لغة الموقع</h3>
           <hr />
@@ -109,6 +109,7 @@
           </ul>
         </div>
 
+        <!-- Font size control -->
         <div class="box">
           <h3 data-i18n="UI.fontSize">حجم الخط</h3>
           <hr />
@@ -119,6 +120,7 @@
           </div>
         </div>
 
+        <!-- Book language selector (populated dynamically) -->
         <div class="box">
           <h3 data-i18n="UI.languages">اللغات</h3>
           <hr />
@@ -127,6 +129,7 @@
           </ul>
         </div>
 
+        <!-- Font family selector (populated dynamically) -->
         <div class="box">
           <h3 data-i18n="UI.fontsFamily">الخطوط</h3>
           <hr />
@@ -135,65 +138,67 @@
       </div>
     </aside>
 
+    <!-- ==================== Book Details Sidebar (left) ==================== -->
     <aside class="book-details scroll">
       <div class="title">
         <h2 data-i18n="UI.search">بحث</h2>
         <div class="close-btn">
-          <img src="./assets/images/icons/close-icon.svg" alt="" />
+          <img src="./assets/images/icons/close-icon.svg" alt="close" />
         </div>
       </div>
 
       <div class="book-info-container">
+        <!-- Book navigation options (chapters, juzs, pages...) -->
         <div class="box">
           <ul class="book-detail-selectors"></ul>
         </div>
 
+        <!-- Search inputs (second input is for sub-list search) -->
         <div class="search-field">
           <input type="search" name="search" placeholder="بحث" />
           <input class="hidden" type="search" name="search" placeholder="بحث" />
         </div>
 
+        <!-- Search results list (populated dynamically) -->
         <div class="box details">
           <ul></ul>
         </div>
       </div>
     </aside>
 
+    <!-- Scroll to top button -->
     <div class="scroll-top">
-      <div>A</div>
+      <div><img src="./assets/images/icons/arrow-up.svg" alt="Arrow" /></div>
     </div>
 
+    <!-- ==================== Footer ==================== -->
     <footer>
       <p>Copyright Souhayl Taiss &copy; 2026</p>
+      <div>
+        <a href="https://www.linkedin.com/in/souhayl-taiss" target="_blank">
+          <img src="./assets/images/icons/linkedin.svg" alt="linkedin" />
+        </a>
+        <a href="https://www.github.com/souhaylTaiss" target="_blank">
+          <img src="./assets/images/icons/github.svg" alt="github" />
+        </a>
+      </div>
     </footer>
-    <div class="overlay"></div>
-    <script type="module" src="./assets/script/main.js"></script>
-    <script type="module" src="./assets/script/quran.js"></script>
-    <script type="module" src="./assets/script/hadith.js"></script>
-    <script type="module" src="./assets/script/fonts.js"></script>
-    <script type="module" src="./assets/script/utils.js"></script>
 
-    <!--  Register Server Worker  -->
+    <!-- Overlay (for sidebar backdrop) -->
+    <div class="overlay"></div>
+
+    <!-- ==================== Scripts ==================== -->
+    <!-- Only main.js is needed — all other modules are imported inside it -->
+    <script type="module" src="./assets/script/main.js"></script>
+
+    <!-- Service Worker registration -->
     <script>
       if ("serviceWorker" in navigator) {
         navigator.serviceWorker
           .register("./sw.js")
-          .then((reg) => {
-            console.log(reg);
-          })
-          .catch((err) => {
-            console.log("Error:", err);
-          });
+          .catch((err) => console.error("Service Worker registration failed:", err));
       }
-
-      Notification.requestPermission()
-      .then(res => {
-        if (res === "granted") {
-          console.log("Notification Allowed");
-        } else {
-          console.log("Notification Denied");
-        }
-    })
     </script>
+
   </body>
 </html>
