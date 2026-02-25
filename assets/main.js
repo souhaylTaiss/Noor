@@ -92,21 +92,19 @@ async function fetchUrl(url) {
   let jsonData = await response.json();
   return jsonData;
 }
- hadithPromise = fetchUrl(jsonUrls.hadith);
+//  hadithPromise = fetchUrl(jsonUrls.hadith);
 
-async function getHadith() {
-  let data = await hadithPromise;
-  console.log(data);
+// async function getHadith() {
+//   let data = await hadithPromise;
+//   console.log(data);
 
-  let link = await fetchUrl(data.malik.collection[1].linkmin);
-  for (let i = 0; i < 100 ; i++) {
-    console.log(link.hadiths[i].text)
+//   let link = await fetchUrl(data.malik.collection[1].linkmin);
+//   for (let i = 0; i < 100 ; i++) {
+//     console.log(link.hadiths[i].text)
 
-  }
-
-}
-getHadith()
-
+//   }
+// }
+// getHadith()
 // Change language
 
 UI.websiteLanguagesList.forEach((btn) => {
