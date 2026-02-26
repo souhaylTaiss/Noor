@@ -158,8 +158,8 @@ async function initApp(btn, data, dataInfo, dataLanguages, checkLang) {
     return;
   }
   addBookOptions(bookOptions.hadith, dataLanguages);
-  appState.siteLang == "en" ? UI.siteLangEn.click() : UI.siteLangAr.click();
-}
+  /* appState.siteLang == "en" ? UI.siteLangEn.click() : UI.siteLangAr.click();
+}*/
 
 // ==================== Handle Selection ====================
 export async function handleSelection(isQuran) {
